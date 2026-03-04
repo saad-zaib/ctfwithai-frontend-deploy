@@ -224,22 +224,22 @@ function App() {
     setIsLoggedIn(false);
   };
 
-  return (
-    <Router>
-      <Routes>
-        <Route path="/" element={isLoggedIn ? <Navigate to="/" replace /> : <LandingPage />} />
-        <Route path="/login" element={isLoggedIn ? <Navigate to="/" replace /> : <Login onLoginSuccess={handleLoginSuccess} />} />
-        <Route path="/Register" element={isLoggedIn ? <Navigate to="/" replace /> : <Register onRegisterSuccess={handleLoginSuccess} />} />
-        <Route path="/forgot-password" element={isLoggedIn ? <Navigate to="/" replace /> : <ForgotPassword />} />
-        <Route path="/reset-password" element={isLoggedIn ? <Navigate to="/" replace /> : <ResetPassword />} />
-        <Route path="/*" element={
-          <ProtectedRoute isLoggedIn={isLoggedIn}>
-            <AppShell onLogout={handleLogout} />
-          </ProtectedRoute>
-        } />
-      </Routes>
-    </Router>
-  );
+return (
+  <Router>
+    <Routes>
+      <Route path="/login" element={isLoggedIn ? <Navigate to="/" replace /> : <Login onLoginSuccess={handleLoginSuccess} />} />
+      <Route path="/Register" element={isLoggedIn ? <Navigate to="/" replace /> : <Register onRegisterSuccess={handleLoginSuccess} />} />
+      <Route path="/forgot-password" element={isLoggedIn ? <Navigate to="/" replace /> : <ForgotPassword />} />
+      <Route path="/reset-password" element={isLoggedIn ? <Navigate to="/" replace /> : <ResetPassword />} />
+      <Route path="/*" element={
+        isLoggedIn
+          ? <AppShell onLogout={handleLogout} />
+          : <LandingPage />
+      } />
+    </Routes>
+  </Router>
+);
+
 }
 
 export default App;
