@@ -1,7 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import emailjs from "@emailjs/browser";
-
+import saadImg from "../assets/saad.jpg";
+import mohsinImg from "../assets/mohsin.jpeg";
+import salarImg from "../assets/salar.jpeg";
 import logoImg from "../assets/logo.png";
 import imgChollima from "../assets/pimg1.avif";
 import imgOperator from "../assets/pimg2.png";
@@ -232,7 +234,7 @@ function FeatureCard({ iconChar, title, desc, delay }) {
   );
 }
 
-function TeamCard({ initials, name, role, badge, delay, bio }) {
+function TeamCard({ initials, name, role, badge, delay, bio, img }) {
   const [hov, setHov] = useState(false);
   return (
     <FadeSection delay={delay}>
@@ -256,28 +258,47 @@ function TeamCard({ initials, name, role, badge, delay, bio }) {
             : "0 4px 20px rgba(0,0,0,0.28)",
         }}
       >
-        <div
-          style={{
-            width: 84,
-            height: 84,
-            borderRadius: "50%",
-            background: "linear-gradient(135deg, #ff7300, #7a2000)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            margin: "0 auto 16px",
-            boxShadow: hov
-              ? "0 0 0 4px rgba(255,115,0,0.32), 0 12px 40px rgba(255,115,0,0.35)"
-              : "0 0 0 4px rgba(255,115,0,0.14)",
-            transition: "all 0.4s ease",
-            fontSize: 26,
-            fontWeight: 800,
-            color: "#fff",
-            letterSpacing: -1,
-          }}
-        >
-          {initials}
-        </div>
+        {img ? (
+          <img
+            src={img}
+            alt={name}
+            style={{
+              width: 84,
+              height: 84,
+              borderRadius: "50%",
+              objectFit: "cover",
+              margin: "0 auto 16px",
+              display: "block",
+              boxShadow: hov
+                ? "0 0 0 4px rgba(255,115,0,0.32), 0 12px 40px rgba(255,115,0,0.35)"
+                : "0 0 0 4px rgba(255,115,0,0.14)",
+              transition: "all 0.4s ease",
+            }}
+          />
+        ) : (
+          <div
+            style={{
+              width: 84,
+              height: 84,
+              borderRadius: "50%",
+              background: "linear-gradient(135deg, #ff7300, #7a2000)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              margin: "0 auto 16px",
+              boxShadow: hov
+                ? "0 0 0 4px rgba(255,115,0,0.32), 0 12px 40px rgba(255,115,0,0.35)"
+                : "0 0 0 4px rgba(255,115,0,0.14)",
+              transition: "all 0.4s ease",
+              fontSize: 26,
+              fontWeight: 800,
+              color: "#fff",
+              letterSpacing: -1,
+            }}
+          >
+            {initials}
+          </div>
+        )}
         <span
           style={{
             display: "inline-block",
@@ -1684,7 +1705,8 @@ Describe any vulnerability you want to learn our AI generates a real vulnerable 
               badge="Co-Founder"
               name="Salar Khan"
               role="Software Engineer"
-              bio="Builds and maintains the full ctfWithAi platform, from backend infrastructure to frontend experience."
+              img={salarImg}
+              bio="..."
             />
             <TeamCard
               delay={150}
@@ -1692,7 +1714,8 @@ Describe any vulnerability you want to learn our AI generates a real vulnerable 
               badge="Founder"
               name="Saad Zaib"
               role="Security Engineer"
-              bio="Drives the security architecture of the platform, bridging offensive security expertise with AI-powered lab generation."
+              img={saadImg}
+              bio="..."
             />
             <TeamCard
               delay={300}
@@ -1700,7 +1723,8 @@ Describe any vulnerability you want to learn our AI generates a real vulnerable 
               badge="Co-Founder"
               name="Mohsin Khan"
               role="AI Engineer"
-              bio="Builds and trains Vuln AI, the engine responsible for generating real vulnerable applications on demand."
+              img={mohsinImg}
+              bio="..."
             />
           </div>
         </div>
