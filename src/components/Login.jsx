@@ -10,6 +10,7 @@ import {
   Building2,
   Skull,
 } from "lucide-react";
+import logoImg from '../assets/logo.png';
 
 const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
 
@@ -186,20 +187,7 @@ const Login = ({ onLoginSuccess }) => {
       <div className="relative z-10 w-full max-w-sm mx-4">
         {/* Logo / Brand */}
         <div className="text-center mb-6 fade-up">
-          <div
-            className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4"
-            style={{
-              background: isEnterprise
-                ? "rgba(59, 130, 246, 0.12)"
-                : "rgba(255, 115, 0, 0.12)",
-              border: `1px solid ${isEnterprise ? "rgba(59, 130, 246, 0.3)" : "rgba(255, 115, 0, 0.3)"}`,
-            }}
-          >
-            <Shield
-              className="w-7 h-7"
-              style={{ color: isEnterprise ? "#3b82f6" : "#ff7300" }}
-            />
-          </div>
+	  <img src={logoImg} alt="ctfWithAi" className="w-14 h-14 object-contain mx-auto mb-4" />
           <h1 className="text-2xl font-bold text-white tracking-tight">
             ctfWithAi
           </h1>
