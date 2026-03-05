@@ -1,5 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Shield, Lock, Mail, Eye, EyeOff, Loader, AlertCircle, User, CheckCircle } from 'lucide-react';
+import logoImg from '../assets/logo.png';
+
 
 const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:8000';
 
@@ -244,9 +246,7 @@ const Register = ({ onRegisterSuccess }) => {
 
                 {/* Logo */}
                 <div className="text-center mb-8 fade-up">
-                    <div className="w-14 h-14 rounded-2xl bg-orange-500/15 border border-orange-500/30 flex items-center justify-center mx-auto mb-4">
-                        <Shield className="w-7 h-7 text-orange-500" />
-                    </div>
+			<img src={logoImg} alt="ctfWithAi" className="w-14 h-14 object-contain mx-auto mb-4" />
                     <h1 className="text-2xl font-bold text-white tracking-tight">ctfWithAi</h1>
                     <p className="text-gray-600 text-sm mt-1">
                         {step === 'form' && 'Create your account'}
