@@ -1706,7 +1706,7 @@ Describe any vulnerability you want to learn our AI generates a real vulnerable 
               name="Salar Khan"
               role="Software Engineer"
               img={salarImg}
-              bio="..."
+              bio="Builds and maintains the full ctfWithAi platform, from backend infrastructure to frontend experience."
             />
             <TeamCard
               delay={150}
@@ -1715,7 +1715,7 @@ Describe any vulnerability you want to learn our AI generates a real vulnerable 
               name="Saad Zaib"
               role="Security Engineer"
               img={saadImg}
-              bio="..."
+              bio="Drives the architecture of the platform, bridging offensive security expertise with AI-powered lab generation."
             />
             <TeamCard
               delay={300}
@@ -1724,7 +1724,7 @@ Describe any vulnerability you want to learn our AI generates a real vulnerable 
               name="Mohsin Khan"
               role="AI Engineer"
               img={mohsinImg}
-              bio="..."
+              bio="Builds and trains Vuln AI, the engine responsible for generating real vulnerable applications on demand."
             />
           </div>
         </div>
