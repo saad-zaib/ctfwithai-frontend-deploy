@@ -259,7 +259,7 @@ const Navigation = ({ onLogout }) => {
       >
         <img
           src={ctfLogo}
-          alt="ctfWithAi"
+          alt="hackforge"
           style={{ width: 36, height: 36, objectFit: "contain" }}
         />
         <div>
@@ -272,7 +272,7 @@ const Navigation = ({ onLogout }) => {
               fontFamily: "'DM Sans', sans-serif",
             }}
           >
-            ctfWithAi
+            hackforge
           </div>
         </div>
       </Link>
