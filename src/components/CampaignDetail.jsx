@@ -1707,7 +1707,7 @@ const CampaignDetail = ({ campaignId: propCampaignId, onBack }) => {
                         <div style={{ display: "flex", gap: 8 }}>
                           <input
                             type="text"
-                            placeholder="CTFWITHAI{...}"
+                            placeholder="hackforge{...}"
                             value={selectedMachine === machine.machine_id ? flagInput : ""}
                             onFocus={() => { setSelectedMachine(machine.machine_id); setSubmitResult(null); }}
                             onChange={(e) => { setSelectedMachine(machine.machine_id); setFlagInput(e.target.value); setSubmitResult(null); }}
