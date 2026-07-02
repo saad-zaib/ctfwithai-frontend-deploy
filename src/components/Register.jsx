@@ -898,7 +898,7 @@ const Register = ({ onRegisterSuccess }) => {
 
           <img
             src={logoImg}
-            alt="ctfWithAi"
+            alt="hackforge"
             style={{
               width: 82,
               height: 82,
