@@ -470,7 +470,7 @@ const Login = ({ onLoginSuccess }) => {
 
           <img
             src={logoImg}
-            alt="ctfWithAi"
+            alt="hackforge"
             style={{
               width: 82,
               height: 82,
@@ -583,7 +583,7 @@ const Login = ({ onLoginSuccess }) => {
                 fontFamily: "'DM Sans',sans-serif",
               }}
             >
-              Sign in to your ctfWithAi account
+              Sign in to your hackforge account
             </p>
           </div>
 
@@ -604,7 +604,7 @@ const Login = ({ onLoginSuccess }) => {
               onClick={() => switchPortal("enterprise")}
               className={`lu-tab${portal === "enterprise" ? " active" : ""}`}
             >
-              ctfWithAi for Business
+              hackforge for Business
             </button>
           </div>
 
