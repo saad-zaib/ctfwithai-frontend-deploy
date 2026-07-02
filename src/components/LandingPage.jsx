@@ -1171,7 +1171,7 @@ export default function LandingPage() {
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <img
             src={logoImg}
-            alt="ctfWithAi"
+            alt="hackforge"
             style={{ width: 36, height: 36, objectFit: "contain" }}
           />
           <div>
@@ -1184,7 +1184,7 @@ export default function LandingPage() {
                 fontFamily: "'DM Sans', sans-serif",
               }}
             >
-              ctfWithAi
+              hackforge
             </div>
             <div
               style={{
@@ -1390,7 +1390,7 @@ export default function LandingPage() {
           />
           <img
             src={logoImg}
-            alt="ctfWithAi"
+            alt="hackforge"
             style={{
               width: 130,
               height: 130,
@@ -1661,7 +1661,7 @@ export default function LandingPage() {
           }}
         >
           <FadeSection direction="left">
-            <PillTag>Why CTFWITHAI?</PillTag>
+            <PillTag>Why hackforge?</PillTag>
             <h2 style={H2}>
               We're not like{" "}
               <span style={{ color: C.accent }}>other Platforms.</span>
@@ -1679,7 +1679,7 @@ export default function LandingPage() {
                 same old labs, predictable challenges, no resemblance to the
                 real world.
               </strong>{" "}
-              We built ctfWithAi to tear that wall down. Practice on your
+              We built hackforge to tear that wall down. Practice on your
               favorite vulnerability categories, create the challenges you
               actually want to solve, and build anything you can imagine{" "}
               <strong style={{ color: C.text1 }}>
@@ -1766,15 +1766,15 @@ export default function LandingPage() {
               },
               {
                 title: "The College and University",
-                body: "Most universities teach cybersecurity theory but skip the practical part. With ctfWithAi, teachers can generate labs straight according to their syllabus, and students learn by actually practically doing it, not just reading about it. Real skills, not just a degree",
+                body: "Most universities teach cybersecurity theory but skip the practical part. With hackforge, teachers can generate labs straight according to their syllabus, and students learn by actually practically doing it, not just reading about it. Real skills, not just a degree",
               },
               {
                 title: "The Bug Bounty Hunters",
-                body: "SWhen a new vulnerability drops, bug hunters can replicate it instantly with ctfWithAi practice on a real lab, understand it deeply, and find it in the wild before any threat actor does.",
+                body: "SWhen a new vulnerability drops, bug hunters can replicate it instantly with hackforge practice on a real lab, understand it deeply, and find it in the wild before any threat actor does.",
               },
               {
                 title: "The Enterprises",
-                body: "From individual learners to full security teams, ctfWithAi scales with you. Custom campaigns, team analytics, and AI-generated labs tailored to your organization's threat landscape.",
+                body: "From individual learners to full security teams, hackforge scales with you. Custom campaigns, team analytics, and AI-generated labs tailored to your organization's threat landscape.",
               },
             ].map((g, i) => (
               <FadeSection key={i} delay={i * 100}>
@@ -1823,7 +1823,7 @@ export default function LandingPage() {
           <FadeSection>
             <PillTag>Infrastructure Partner</PillTag>
             <h2 style={{ ...H2, marginBottom: 24 }}>
-              ctfWithAi × <span style={{ color: C.accent }}>AWS Activate</span>:
+              hackforge × <span style={{ color: C.accent }}>AWS Activate</span>:
               Building the Future of AI in Education
             </h2>
             <p
@@ -1976,7 +1976,7 @@ export default function LandingPage() {
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <img
               src={logoImg}
-              alt="ctfwithai"
+              alt="hackforge"
               style={{ width: 26, height: 26, objectFit: "contain" }}
             />
             <div>
@@ -1988,10 +1988,10 @@ export default function LandingPage() {
                   fontFamily: "'DM Sans', sans-serif",
                 }}
               >
-                ctfwithAi
+                hackforge
               </div>
               <div style={{ color: C.text3, fontSize: 10.5, marginTop: 1 }}>
-                © 2026 ctfWithAi. All rights reserved.
+                © 2026 hackforge. All rights reserved.
               </div>
             </div>
           </div>
