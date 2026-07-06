@@ -78,8 +78,8 @@ const useCounter = (target, duration = 1400) => {
 /* ═══════════════════════════════════════════
    StatCard
 ═══════════════════════════════════════════ */
-const StatCard = ({ icon: Icon, label, value, accent, delay, isLive }) => {
-  const animated = useCounter(value ?? 0, 1200);
+const StatCard = ({ icon: Icon, label, value, suffix = "", accent, delay, isLive }) => {
+  const animated = useCounter(typeof value === "number" ? value : 0, 1200);
 
   return (
     <div
@@ -157,7 +157,7 @@ const StatCard = ({ icon: Icon, label, value, accent, delay, isLive }) => {
           fontVariantNumeric: "tabular-nums",
         }}
       >
-        {animated}
+        {animated}{suffix}
       </p>
 
       {/* label */}
@@ -527,6 +527,7 @@ const Dashboard = () => {
   const [userMachines, setUserMachines] = useState([]);
   const [leaderboard, setLeaderboard] = useState([]);
   const [todayStats, setTodayStats] = useState({ solved: 0, flags: 0 });
+  const [totalStats, setTotalStats] = useState({ solved: 0, points: 0, streak: 0 });
   const [userCampaigns, setUserCampaigns] = useState([]);
   const [assignedCampaigns, setAssignedCampaigns] = useState([]);
   const [startingCampaign, setStartingCampaign] = useState(null);
@@ -598,6 +599,14 @@ const Dashboard = () => {
       setTodayStats({
         solved: tSubs.filter((s) => s.correct).length,
         flags: tSubs.length,
+      });
+
+      // Total stats from user row (authoritative — works even when flag_submissions is sparse)
+      const userRow = progressRes?.user || {};
+      setTotalStats({
+        solved: userRow.machines_solved || 0,
+        points: userRow.total_points || 0,
+        streak: userRow.current_streak || 0,
       });
 
       const lb = Array.isArray(lbRes) ? lbRes : lbRes?.entries || [];
@@ -810,7 +819,7 @@ const Dashboard = () => {
         .db-action-btn:hover .db-chevron { color: ${C.accent} !important; transform: translateX(2px); }
       `}</style>
 
-      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "36px 32px" }}>
+      <div className="resp-page-pad" style={{ maxWidth: 1200, margin: "0 auto", padding: "36px 32px" }}>
         {/* ══ HEADER ══ */}
         <div
           style={{
@@ -900,6 +909,7 @@ const Dashboard = () => {
 
         {/* ══ TOP GRID: Tabbed panel + Solve Feed ══ */}
         <div
+          className="resp-grid-1col"
           style={{
             display: "grid",
             gridTemplateColumns: "minmax(0,2fr) minmax(0,1fr)",
@@ -1264,6 +1274,7 @@ const Dashboard = () => {
 
         {/* ══ STAT CARDS ══ */}
         <div
+          className="resp-grid-2col"
           style={{
             display: "grid",
             gridTemplateColumns: "repeat(3, 1fr)",
@@ -1288,8 +1299,9 @@ const Dashboard = () => {
           />
           <StatCard
             icon={Flame}
-            label="Today Solves"
-            value={todayStats.solved}
+            label="Streak"
+            value={totalStats.streak}
+            suffix="d"
             accent={C.accent}
             delay={0.14}
           />
@@ -1297,6 +1309,7 @@ const Dashboard = () => {
 
         {/* ══ BOTTOM GRID: Today's Stats + Quick Actions ══ */}
         <div
+          className="resp-grid-1col"
           style={{
             display: "grid",
             gridTemplateColumns: "1fr 1fr",
@@ -1339,9 +1352,25 @@ const Dashboard = () => {
               >
                 <Clock style={{ width: 14, height: 14, color: C.accent }} />
               </div>
-              Today's Stats
+              My Stats
             </h2>
 
+            <div style={{ marginBottom: 10 }}>
+              <p style={{ fontSize: 10, fontWeight: 700, color: C.text3, letterSpacing: 0.8, margin: "0 0 6px", fontFamily: "'DM Sans',sans-serif" }}>ALL TIME</p>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                {[
+                  { label: "Solved", val: totalStats.solved },
+                  { label: "Points", val: totalStats.points },
+                ].map((s) => (
+                  <div key={s.label} style={{ textAlign: "center", padding: "12px 8px", borderRadius: 10, background: C.accentBg, border: `1px solid ${C.accentBdr}` }}>
+                    <p style={{ fontSize: 26, fontWeight: 800, color: C.accent, margin: 0, fontFamily: "'DM Sans',sans-serif" }}>{s.val}</p>
+                    <p style={{ fontSize: 11, color: C.text3, margin: "3px 0 0", fontFamily: "'DM Sans',sans-serif" }}>{s.label}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <p style={{ fontSize: 10, fontWeight: 700, color: C.text3, letterSpacing: 0.8, margin: "10px 0 6px", fontFamily: "'DM Sans',sans-serif" }}>TODAY</p>
             <div
               style={{
                 display: "grid",

@@ -6,8 +6,41 @@ import {
   Shield,
   Zap,
   Terminal,
+  Plus,
+  MessageSquare,
+  Trash2,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import hackforgeLogo from "../assets/logo.png";
+
+// ── Session persistence helpers ──────────────────────────────────────────────
+const SESSIONS_KEY = (uid) => `vulnai_sessions_${uid || "anon"}`;
+
+function loadSessions(uid) {
+  try { return JSON.parse(localStorage.getItem(SESSIONS_KEY(uid)) || "[]"); }
+  catch { return []; }
+}
+function saveSessions(uid, sessions) {
+  localStorage.setItem(SESSIONS_KEY(uid), JSON.stringify(sessions.slice(0, 40)));
+}
+function upsertSession(uid, id, messages) {
+  if (!messages.some(m => m.role === "user")) return; // don't save empty
+  const sessions = loadSessions(uid);
+  const firstUser = messages.find(m => m.role === "user");
+  const title = firstUser ? firstUser.text.slice(0, 48) + (firstUser.text.length > 48 ? "…" : "") : "New chat";
+  const idx = sessions.findIndex(s => s.id === id);
+  const entry = { id, title, messages, updatedAt: Date.now() };
+  if (idx >= 0) sessions[idx] = entry;
+  else sessions.unshift(entry);
+  saveSessions(uid, sessions);
+}
+function deleteSession(uid, id) {
+  saveSessions(uid, loadSessions(uid).filter(s => s.id !== id));
+}
+function newSessionId(uid) {
+  return `${uid || "anon"}_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+}
 
 /* ─────────────────────────────────────────────
    Aurius Design Tokens
@@ -468,13 +501,141 @@ const renderMessageContent = (text, isUser = false) => {
   });
 };
 
+/* ─── Sidebar ─── */
+const Sidebar = ({ sessions, activeId, onNew, onSelect, onDelete, collapsed, onToggle }) => (
+  <div style={{
+    width: collapsed ? 52 : 240, flexShrink: 0,
+    background: "#ffffff", borderRight: `1px solid ${C.border}`,
+    display: "flex", flexDirection: "column",
+    transition: "width 0.2s ease", overflow: "hidden",
+    height: "100%",
+  }}>
+    {/* Top bar */}
+    {collapsed ? (
+      /* Collapsed: expand button on top, New Chat icon below */
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "12px 0 8px", gap: 8, borderBottom: `1px solid ${C.border}` }}>
+        <button onClick={onToggle} title="Expand sidebar" style={{
+          width: 30, height: 30, borderRadius: 8, display: "flex", alignItems: "center",
+          justifyContent: "center", background: "none", border: `1px solid ${C.border}`,
+          cursor: "pointer", color: C.text3,
+        }}>
+          <ChevronRight style={{ width: 13, height: 13 }} />
+        </button>
+        <button onClick={onNew} title="New chat" style={{
+          width: 30, height: 30, borderRadius: 8, display: "flex", alignItems: "center",
+          justifyContent: "center", background: C.accent, border: "none",
+          cursor: "pointer", color: "#fff",
+        }}>
+          <Plus style={{ width: 14, height: 14 }} />
+        </button>
+      </div>
+    ) : (
+      /* Expanded: collapse button on top row, New Chat full-width below */
+      <div style={{ padding: "12px 10px 10px", borderBottom: `1px solid ${C.border}` }}>
+        <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 8 }}>
+          <button onClick={onToggle} title="Collapse sidebar" style={{
+            width: 30, height: 30, borderRadius: 8, display: "flex", alignItems: "center",
+            justifyContent: "center", background: "none", border: `1px solid ${C.border}`,
+            cursor: "pointer", color: C.text3,
+          }}>
+            <ChevronLeft style={{ width: 13, height: 13 }} />
+          </button>
+        </div>
+        <button onClick={onNew} style={{
+          width: "100%", display: "flex", alignItems: "center", gap: 7,
+          background: C.accent, border: "none",
+          borderRadius: 8, padding: "8px 12px", cursor: "pointer", color: "#fff",
+          fontSize: 13, fontWeight: 700, fontFamily: "'DM Sans',sans-serif",
+        }}>
+          <Plus style={{ width: 14, height: 14, flexShrink: 0 }} /> New Chat
+        </button>
+      </div>
+    )}
+
+    {/* Session list */}
+    {!collapsed && (
+      <div style={{ flex: 1, overflowY: "auto", padding: "8px 8px" }}>
+        {sessions.length === 0 ? (
+          <div style={{ textAlign: "center", padding: "28px 12px" }}>
+            <MessageSquare style={{ width: 24, height: 24, color: C.border, margin: "0 auto 8px" }} />
+            <p style={{ fontSize: 12, color: C.text3, fontFamily: "'DM Sans',sans-serif", margin: 0 }}>
+              No chats yet.<br />Start a new chat!
+            </p>
+          </div>
+        ) : (
+          <>
+            <p style={{
+              fontSize: 10, fontWeight: 700, color: C.text3, letterSpacing: 0.8,
+              padding: "4px 6px 6px", fontFamily: "'DM Sans',sans-serif", margin: 0,
+            }}>
+              RECENT
+            </p>
+            {sessions.map(s => (
+              <div key={s.id}
+                onClick={() => onSelect(s.id)}
+                style={{
+                  display: "flex", alignItems: "center", gap: 7,
+                  padding: "8px 8px", borderRadius: 8, cursor: "pointer",
+                  background: s.id === activeId ? C.accentBg : "transparent",
+                  border: `1px solid ${s.id === activeId ? C.accentBdr : "transparent"}`,
+                  marginBottom: 2, transition: "background 0.12s",
+                  fontFamily: "'DM Sans',sans-serif",
+                }}>
+                <MessageSquare style={{ width: 13, height: 13, flexShrink: 0, color: s.id === activeId ? C.accent : C.text3 }} />
+                <span style={{
+                  flex: 1, fontSize: 12.5, color: s.id === activeId ? C.accent : C.text2,
+                  fontWeight: s.id === activeId ? 700 : 400,
+                  overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                }}>
+                  {s.title}
+                </span>
+                <button onClick={e => { e.stopPropagation(); onDelete(s.id); }}
+                  style={{
+                    background: "none", border: "none", cursor: "pointer", padding: 3,
+                    color: C.text3, flexShrink: 0, borderRadius: 4,
+                    display: "flex", alignItems: "center",
+                  }}
+                  title="Delete">
+                  <Trash2 style={{ width: 11, height: 11 }} />
+                </button>
+              </div>
+            ))}
+          </>
+        )}
+      </div>
+    )}
+
+    {/* Collapsed: just icon buttons */}
+    {collapsed && (
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", padding: "8px 0", gap: 4, overflowY: "auto" }}>
+        {sessions.slice(0, 12).map(s => (
+          <button key={s.id}
+            onClick={() => onSelect(s.id)}
+            title={s.title}
+            style={{
+              width: 30, height: 30, borderRadius: 8, display: "flex", alignItems: "center",
+              justifyContent: "center", cursor: "pointer",
+              background: s.id === activeId ? C.accentBg : "none",
+              border: `1px solid ${s.id === activeId ? C.accentBdr : "transparent"}`,
+            }}>
+            <MessageSquare style={{ width: 13, height: 13, color: s.id === activeId ? C.accent : C.text3 }} />
+          </button>
+        ))}
+      </div>
+    )}
+  </div>
+);
+
 /* ══════════════════════════════════════════
    MAIN COMPONENT
 ══════════════════════════════════════════ */
 export default function LabChat() {
-  const sessionId = useRef(
-    localStorage.getItem("userId") || "session_" + randomId(),
-  );
+  const userId = localStorage.getItem("userId") || "";
+  // sessionId is sent to the backend — must always be the real userId so that
+  // generated_machines.user_id is set correctly (machine appears in Machines tab).
+  const sessionId = useRef(userId);
+  // chatId is a local-only identifier used for sidebar session management in localStorage.
+  const chatId = useRef(newSessionId(userId));
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -491,12 +652,80 @@ export default function LabChat() {
   const [reviewError, setReviewError] = useState("");
   const [reviewSubmitting, setReviewSubmitting] = useState(false);
   const reviewPollTimeoutsRef = useRef([]);
+  // Sidebar — hidden on mobile, collapsed on desktop
+  const [isMobileView, setIsMobileView] = useState(() => window.innerWidth < 640);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
+
+  React.useEffect(() => {
+    const onResize = () => setIsMobileView(window.innerWidth < 640);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+  const [sessions, setSessions] = useState(() => loadSessions(userId));
   const userName =
     (
       localStorage.getItem("name") ||
       localStorage.getItem("username") ||
       "hacker"
     ).trim() || "hacker";
+
+  // Save messages to session store whenever they change
+  useEffect(() => {
+    if (messages.length > 0) {
+      upsertSession(userId, chatId.current, messages);
+      setSessions(loadSessions(userId));
+    }
+  }, [messages, userId]);
+
+  // Auto-fill input from For You tab deep-link
+  useEffect(() => {
+    const suggestion = localStorage.getItem("vulnai_suggest");
+    if (suggestion) {
+      localStorage.removeItem("vulnai_suggest");
+      setInput(suggestion);
+      setTimeout(() => textareaRef.current?.focus(), 200);
+    }
+  }, []);
+
+  const startNewChat = useCallback(() => {
+    // Reset backend session (backend session = real userId, always the same)
+    fetch(`${API_BASE}/api/lab/reset`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${localStorage.getItem("token") || ""}` },
+      body: JSON.stringify({ session_id: sessionId.current }),
+    }).catch(() => {});
+    // Only the local chat ID rotates — backend sessionId stays as userId
+    chatId.current = newSessionId(userId);
+    setMessages([]);
+    setInput("");
+    setJobMap({});
+    setQuotaBlock(null);
+    setShowReviewBox(false);
+    setReviewWouldPay(null);
+    setReviewWhy("");
+    Object.values(pollingRef.current).forEach(clearInterval);
+    pollingRef.current = {};
+  }, [userId]);
+
+  const switchSession = useCallback((id) => {
+    if (id === chatId.current) return;
+    const all = loadSessions(userId);
+    const s = all.find(x => x.id === id);
+    if (!s) return;
+    // Only switch the local chat context — backend sessionId stays as userId
+    chatId.current = id;
+    setMessages(s.messages || []);
+    setJobMap({});
+    setInput("");
+    setQuotaBlock(null);
+    setShowReviewBox(false);
+  }, [userId]);
+
+  const handleDeleteSession = useCallback((id) => {
+    deleteSession(userId, id);
+    setSessions(loadSessions(userId));
+    if (id === chatId.current) startNewChat();
+  }, [userId, startNewChat]);
 
   const hasUserMessage = messages.some((m) => m.role === "user");
 
@@ -811,13 +1040,25 @@ export default function LabChat() {
   };
 
   return (
+    <div style={{ display: "flex", height: "calc(100dvh - 73px)", fontFamily: "'DM Sans', sans-serif" }}>
+      {!isMobileView && (
+        <Sidebar
+          sessions={sessions}
+          activeId={chatId.current}
+          onNew={startNewChat}
+          onSelect={switchSession}
+          onDelete={handleDeleteSession}
+          collapsed={sidebarCollapsed}
+          onToggle={() => setSidebarCollapsed(v => !v)}
+        />
+      )}
     <div
       style={{
         display: "flex",
         flexDirection: "column",
-        height: "calc(100vh - 73px)",
+        flex: 1,
+        minWidth: 0,
         background: C.pageBg,
-        fontFamily: "'DM Sans', sans-serif",
       }}
     >
       <style>{`
@@ -1210,6 +1451,7 @@ export default function LabChat() {
           )}
         </div>
       </div>
+    </div>
     </div>
   );
 }

@@ -15,6 +15,9 @@ import CampaignDetail from './components/CampaignDetail';
 import Machines from './components/Machines';
 import Leaderboard from './components/Leaderboard';
 import Profile from './components/Profile';
+import Recommendations from './components/Recommendations';
+import PublicProfile from './components/PublicProfile';
+import NotificationDropdown from './components/NotificationDropdown';
 import ContainerDebug from './components/ContainerDebug';
 import LabChat from './components/LabChat';
 import EnterpriseDashboard from './components/EnterpriseDashboard';
@@ -31,6 +34,9 @@ import BillingAdmin from './components/BillingAdmin';
 import PrivacyPolicy from './components/PrivacyPolicy';
 import RefundPolicy from './components/RefundPolicy';
 import PricingPage from './components/PricingPage';
+import CoopSession from './components/CoopSession';
+import CoopLobby from './components/CoopLobby';
+import Signal from './components/Signal';
 
 // ─── Navigation wrapper for TeacherDashboard ─────────────────────────────────
 const TeacherDashboardWrapper = () => {
@@ -77,25 +83,45 @@ const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
 const Navigation = ({ onLogout }) => {
   const [scrolled, setScrolled] = useState(false);
   const [isCompact, setIsCompact] = useState(() => window.innerWidth < 900);
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth < 640);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
   const [planCode, setPlanCode] = useState("free");
   const [upgradeBusy, setUpgradeBusy] = useState("");
   const [showUpgradeMenu, setShowUpgradeMenu] = useState(false);
   const upgradeMenuRef = useRef(null);
+  const profileRef = useRef(null);
+
+  const location = useLocation();
 
   useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 15);
+    setMenuOpen(false);
+    setProfileOpen(false);
+  }, [location.pathname]);
+
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 15);
+    const handleResize = () => {
+      setIsCompact(window.innerWidth < 900);
+      setIsMobile(window.innerWidth < 640);
     };
-    const handleResize = () => setIsCompact(window.innerWidth < 900);
+    const handleDocClick = (e) => {
+      if (profileRef.current && !profileRef.current.contains(e.target)) {
+        setProfileOpen(false);
+      }
+    };
     window.addEventListener("scroll", handleScroll);
     window.addEventListener("resize", handleResize);
+    document.addEventListener("mousedown", handleDocClick);
+    document.addEventListener("touchstart", handleDocClick);
     return () => {
       window.removeEventListener("scroll", handleScroll);
       window.removeEventListener("resize", handleResize);
+      document.removeEventListener("mousedown", handleDocClick);
+      document.removeEventListener("touchstart", handleDocClick);
     };
   }, []);
 
-  const location = useLocation();
   const isActive = (path) => location.pathname === path;
   const username = localStorage.getItem("username") || "User";
   const currentUserId = localStorage.getItem("userId") || "";
@@ -129,6 +155,9 @@ const Navigation = ({ onLogout }) => {
       { path: "/campaigns", label: "Campaigns" },
       // { path: "/leaderboard", label: "Leaderboard" },
       { path: "/vuln-ai", label: "Vuln AI" },
+      { path: "/recommendations", label: "For You" },
+      { path: "/signal", label: "Signal" },
+      { path: "/coop", label: "Hack Together" },
       { path: "/profile", label: "Profile" },
     ];
   }, [role]);
@@ -277,18 +306,9 @@ const Navigation = ({ onLogout }) => {
         </div>
       </Link>
 
-          {/* Nav links */}
-          <div style={{ display: "flex", alignItems: "center", gap: isCompact ? 8 : 18, flexShrink: 1, minWidth: 0 }}>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: isCompact ? 8 : 16,
-                overflowX: isCompact ? "auto" : "visible",
-                scrollbarWidth: "none",
-                msOverflowStyle: "none",
-              }}
-            >
+          {/* Desktop nav links — hidden on mobile */}
+          {!isMobile && (
+            <div style={{ display: "flex", alignItems: "center", gap: isCompact ? 4 : 16, flexShrink: 1, minWidth: 0, overflowX: "auto", scrollbarWidth: "none" }}>
               {navItems.map((item) => {
                 const active = isActive(item.path);
                 return (
@@ -298,289 +318,158 @@ const Navigation = ({ onLogout }) => {
                     className="nav-link-aurius"
                     style={{
                       position: "relative",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      fontSize: isCompact ? 12.5 : 14,
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      fontSize: isCompact ? 13 : 14,
                       fontWeight: 700,
                       color: active ? C.text1 : C.text3,
                       textDecoration: "none",
-                      padding: isCompact ? "6px 8px" : "6px 12px",
+                      padding: isCompact ? "10px 10px" : "10px 12px",
                       borderRadius: 30,
                       border: "1px solid transparent",
                       background: "transparent",
                       transition: "all 0.2s ease",
                       whiteSpace: "nowrap",
+                      minHeight: 44,
                     }}
                   >
                     {item.label}
                     {active && (
-                      <span
-                        style={{
-                          position: "absolute",
-                          bottom: 2,
-                          left: "50%",
-                          transform: "translateX(-50%)",
-                          width: 14,
-                          height: 3,
-                          background: C.accent,
-                          borderRadius: 3,
-                        }}
-                      />
+                      <span style={{
+                        position: "absolute", bottom: 4, left: "50%",
+                        transform: "translateX(-50%)", width: 14, height: 3,
+                        background: C.accent, borderRadius: 3,
+                      }} />
                     )}
                   </Link>
                 );
               })}
             </div>
+          )}
 
-            {/* Upgrade / pricing action hidden for now */}
-            {/* {!!upgradeOptions.length && (
-              <div style={{ position: "relative" }} ref={upgradeMenuRef}>
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (upgradeOptions.length === 1) {
-                      startUpgradeCheckout(upgradeOptions[0].code);
-                      return;
-                    }
-                    setShowUpgradeMenu((v) => !v);
-                  }}
-                  style={{
-                    border: `1px solid ${C.accentBdr}`,
-                    borderRadius: 999,
-                    padding: isCompact ? "7px 10px" : "8px 12px",
-                    fontSize: isCompact ? 12 : 13,
-                    fontWeight: 800,
-                    background: C.accentBg,
-                    color: C.accent,
-                    cursor: "pointer",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  {upgradeBusy
-                    ? "Starting..."
-                    : upgradeOptions.length === 1
-                    ? "Upgrade to Pro Plus"
-                    : "Upgrade"}
-                </button>
+          {/* Right side: notifications + avatar + hamburger */}
+          <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+            {currentUserId && <NotificationDropdown />}
 
-                {showUpgradeMenu && upgradeOptions.length > 1 && (
-                  <div
-                    style={{
-                      position: "absolute",
-                      right: 0,
-                      top: "calc(100% + 8px)",
-                      width: 220,
-                      background: C.cardBg,
-                      border: `1px solid ${C.border}`,
-                      borderRadius: 12,
-                      boxShadow: `0 10px 30px ${C.shadowMd}`,
-                      padding: 8,
-                      zIndex: 150,
-                    }}
-                  >
-                    {upgradeOptions.map((opt) => (
-                      <button
-                        key={opt.code}
-                        type="button"
-                        onClick={() => startUpgradeCheckout(opt.code)}
-                        disabled={upgradeBusy === opt.code}
-                        style={{
-                          width: "100%",
-                          border: "none",
-                          borderRadius: 8,
-                          padding: "10px 10px",
-                          textAlign: "left",
-                          background: upgradeBusy === opt.code ? "rgba(249,115,22,0.12)" : "transparent",
-                          color: C.text1,
-                          fontSize: 13,
-                          fontWeight: 700,
-                          cursor: "pointer",
-                        }}
-                      >
-                        {upgradeBusy === opt.code ? "Starting..." : opt.label}
-                      </button>
-                    ))}
-                  </div>
+            {/* Avatar / profile — click-based on all screens */}
+            <div ref={profileRef} style={{ position: "relative" }}>
+              <button
+                onClick={() => setProfileOpen(v => !v)}
+                style={{
+                  display: "flex", alignItems: "center", gap: 8,
+                  padding: "6px 10px 6px 6px", borderRadius: 30,
+                  border: `1px solid ${profileOpen ? "rgba(232,226,219,0.78)" : "transparent"}`,
+                  background: profileOpen ? "rgba(255,255,255,0.58)" : "transparent",
+                  cursor: "pointer", minHeight: 44, transition: "all 0.2s",
+                }}
+              >
+                <div style={{
+                  width: 34, height: 34, borderRadius: "50%", background: avatarBg,
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  color: "#fff", fontSize: 14, fontWeight: 800, flexShrink: 0, overflow: "hidden",
+                }}>
+                  {profileAvatar
+                    ? <img src={profileAvatar} alt={username} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                    : username.slice(0, 1).toUpperCase()
+                  }
+                </div>
+                {!isMobile && (
+                  <span style={{ fontSize: 13, fontWeight: 700, color: C.text1, whiteSpace: "nowrap" }}>
+                    {username.length > 12 ? username.slice(0, 12) + "…" : username}
+                  </span>
                 )}
-              </div>
-            )} */}
+              </button>
 
-            {/* Separator */}
-            {!isCompact && <div style={{ width: 1, height: 24, background: C.border }} />}
-
-            {/* User avatar + hover profile card */}
-            <div
-              className="nav-profile-group"
-              style={{ position: "relative", cursor: "pointer" }}
-            >
-              {/* Trigger */}
-              <div
-                className="nav-profile-trigger"
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 10,
-                  padding: "6px 14px 6px 6px",
-                  borderRadius: 30,
-                  border: "1px solid transparent",
-                  transition: "all 0.2s",
-                  background: "transparent",
-                }}
-              >
-                <div
-                  style={{
-                    width: 32,
-                    height: 32,
-                    borderRadius: "50%",
-                    background: avatarBg,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    color: "#fff",
-                    fontSize: 13,
-                    fontWeight: 800,
-                    flexShrink: 0,
-                    overflow: "hidden",
-                  }}
-                >
-                  {profileAvatar ? (
-                    <img
-                      src={profileAvatar}
-                      alt={username}
-                      style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                    />
-                  ) : (
-                    username.slice(0, 1).toUpperCase()
-                  )}
-                </div>
-                <div
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: 2,
-                  }}
-                >
-                  {!isCompact && (
-                    <span
-                      style={{
-                        fontSize: 13,
-                        fontWeight: 700,
-                        color: C.text1,
-                        lineHeight: 1,
-                      }}
-                    >
-                      {username.length > 10 ? username.slice(0, 10) + "..." : username}
-                    </span>
-                  )}
-                  {isEnterprise && (
-                    <span
-                      style={{
-                        fontSize: 10,
-                        fontWeight: 700,
-                        color: "#3b82f6",
-                        letterSpacing: 0.5,
-                      }}
-                    >
-                      {role === "enterprise_admin" ? "ADMIN" : "STAFF"}
-                    </span>
-                  )}
-                </div>
-              </div>
-
-              {/* Dropdown card */}
-              <div
-                className="nav-profile-dropdown"
-                style={{
-                  position: "absolute",
-                  right: 0,
-                  top: "calc(100% + 4px)",
-                  width: 220,
-                  background: C.cardBg,
-                  border: `1px solid ${C.border}`,
-                  borderRadius: 16,
-                  boxShadow: `0 14px 40px ${C.shadowMd}, 0 4px 12px ${C.shadow}`,
-                  padding: 8,
-                  opacity: 0,
-                  visibility: "hidden",
-                  transform: "translateY(8px)",
-                  transition: "all 0.24s cubic-bezier(0.16, 1, 0.3, 1)",
-                }}
-              >
-                {/* Avatar + name */}
-                <div
-                  style={{
-                    padding: "12px 14px",
-                    borderBottom: `1px solid ${C.border}`,
-                    marginBottom: 6,
-                  }}
-                >
-                  <p
+              {/* Profile dropdown — click-triggered, works on touch */}
+              {profileOpen && (
+                <div style={{
+                  position: "absolute", right: 0, top: "calc(100% + 6px)",
+                  width: 220, background: C.cardBg,
+                  border: `1px solid ${C.border}`, borderRadius: 16,
+                  boxShadow: `0 14px 40px ${C.shadowMd}`, padding: 8, zIndex: 200,
+                }}>
+                  <div style={{ padding: "12px 14px", borderBottom: `1px solid ${C.border}`, marginBottom: 6 }}>
+                    <p style={{ fontSize: 14, fontWeight: 800, color: C.text1, marginBottom: 2 }}>
+                      {username.length > 14 ? username.slice(0, 14) + "…" : username}
+                    </p>
+                    <p style={{ fontSize: 12, fontWeight: 600, color: C.text3 }}>{roleLabel}</p>
+                  </div>
+                  <button
+                    onClick={() => { setProfileOpen(false); onLogout(); }}
                     style={{
-                      fontSize: 14,
-                      fontWeight: 800,
-                      color: C.text1,
-                      marginBottom: 2,
-                      lineHeight: 1.2,
+                      width: "100%", display: "flex", alignItems: "center", gap: 10,
+                      padding: "12px 14px", border: "none", background: "transparent",
+                      borderRadius: 10, color: "#dc2626", fontSize: 14, fontWeight: 700,
+                      cursor: "pointer", textAlign: "left", fontFamily: "'DM Sans', sans-serif",
+                      minHeight: 44,
                     }}
                   >
-                    {username.length > 10 ? username.slice(0, 10) + "..." : username}
-                  </p>
-                  <p style={{ fontSize: 11, fontWeight: 600, color: C.text3 }}>
-                    {roleLabel}
-                  </p>
+                    Logout
+                  </button>
                 </div>
+              )}
+            </div>
 
-                {/* Actions */}
-                <button
-                  onClick={onLogout}
-                  className="nav-logout-btn"
-                  style={{
-                    width: "100%",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 10,
-                    padding: "10px 14px",
-                    border: "none",
-                    background: "transparent",
-                    borderRadius: 10,
-                    color: "#dc2626",
-                    fontSize: 13,
-                    fontWeight: 700,
-                    cursor: "pointer",
-                    transition: "all 0.2s",
-                    textAlign: "left",
-                    fontFamily: "'DM Sans', sans-serif",
-                  }}
-                >
-                  Logout
-                </button>
+            {/* Hamburger — mobile only */}
+            {isMobile && (
+              <button
+                onClick={() => setMenuOpen(v => !v)}
+                style={{
+                  display: "flex", flexDirection: "column", justifyContent: "center",
+                  alignItems: "center", gap: 5, width: 44, height: 44,
+                  background: "none", border: "none", cursor: "pointer", borderRadius: 10,
+                  padding: 10,
+                }}
+                aria-label="Menu"
+              >
+                <span style={{ width: 20, height: 2, background: C.text1, borderRadius: 2, display: "block", transition: "all 0.2s", transform: menuOpen ? "rotate(45deg) translate(5px,5px)" : "none" }} />
+                <span style={{ width: 20, height: 2, background: C.text1, borderRadius: 2, display: "block", opacity: menuOpen ? 0 : 1, transition: "all 0.2s" }} />
+                <span style={{ width: 20, height: 2, background: C.text1, borderRadius: 2, display: "block", transition: "all 0.2s", transform: menuOpen ? "rotate(-45deg) translate(5px,-5px)" : "none" }} />
+              </button>
+            )}
+          </div>
+
+          {/* Mobile slide-down menu */}
+          {isMobile && menuOpen && (
+            <div style={{
+              position: "fixed", top: 62, left: 0, right: 0, bottom: 0,
+              background: "rgba(0,0,0,0.4)", zIndex: 150,
+            }} onClick={() => setMenuOpen(false)}>
+              <div
+                onClick={e => e.stopPropagation()}
+                style={{
+                  background: C.navGlass, backdropFilter: "blur(12px)",
+                  WebkitBackdropFilter: "blur(12px)",
+                  borderBottom: `1px solid ${C.border}`,
+                  padding: "8px 0 16px",
+                }}
+              >
+                {navItems.map((item) => {
+                  const active = isActive(item.path);
+                  return (
+                    <Link
+                      key={item.path}
+                      to={item.path}
+                      onClick={() => setMenuOpen(false)}
+                      style={{
+                        display: "flex", alignItems: "center",
+                        padding: "14px 24px", textDecoration: "none",
+                        fontSize: 15, fontWeight: 700,
+                        color: active ? C.accent : C.text2,
+                        background: active ? C.accentBg : "transparent",
+                        borderLeft: active ? `3px solid ${C.accent}` : "3px solid transparent",
+                      }}
+                    >
+                      {item.label}
+                    </Link>
+                  );
+                })}
               </div>
             </div>
-          </div>
+          )}
 
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&display=swap');
-
-        .nav-link-aurius:hover {
-          color: ${C.text1} !important;
-        }
-
-        .nav-profile-group:hover .nav-profile-trigger {
-          background: rgba(255,255,255,0.58) !important;
-          border-color: rgba(232,226,219,0.78) !important;
-          box-shadow: 0 1px 4px rgba(0,0,0,0.03) !important;
-        }
-
-        .nav-profile-group:hover .nav-profile-dropdown {
-          opacity: 1 !important;
-          visibility: visible !important;
-          transform: translateY(0) !important;
-        }
-
-        .nav-logout-btn:hover {
-          background: rgba(220,38,38,0.08) !important;
-        }
+        .nav-link-aurius:hover { color: ${C.text1} !important; }
       `}</style>
     </nav>
   );
@@ -644,12 +533,17 @@ const AppShell = ({ onLogout }) => (
       <Route path="/" element={<Guarded roles={['individual', 'enterprise_staff', 'enterprise_admin']}>{(localStorage.getItem('role') || 'individual') === 'individual' ? <Dashboard /> : <Navigate to={getRoleHomePath(localStorage.getItem('role') || 'individual')} replace />}</Guarded>} />
       <Route path="/machines" element={<Guarded roles={['individual', 'enterprise_staff']}><Machines /></Guarded>} />
       <Route path="/profile" element={<Guarded roles={['individual', 'enterprise_staff', 'enterprise_admin']}><Profile /></Guarded>} />
+      <Route path="/recommendations" element={<Guarded roles={['individual', 'enterprise_staff', 'enterprise_admin']}><Recommendations /></Guarded>} />
+      <Route path="/user/:username" element={<Guarded roles={['individual', 'enterprise_staff', 'enterprise_admin']}><PublicProfile /></Guarded>} />
       <Route path="/debug" element={<Guarded roles={['individual']}><ContainerDebug /></Guarded>} />
       <Route path="/leaderboard" element={<Guarded roles={['individual', 'enterprise_staff']}><Leaderboard /></Guarded>} />
       <Route path="/vuln-ai" element={<Guarded roles={['individual', 'enterprise_staff']}><LabChat /></Guarded>} />
+      <Route path="/signal" element={<Guarded roles={['individual', 'enterprise_staff']}><Signal /></Guarded>} />
       {/* Campaigns — accessible to both staff and individual */}
       <Route path="/campaigns" element={<Guarded roles={['enterprise_staff', 'individual']}><Campaigns /></Guarded>} />
       <Route path="/campaigns/:campaignId" element={<Guarded roles={['enterprise_staff', 'individual']}><CampaignDetail /></Guarded>} />
+      <Route path="/coop" element={<Guarded roles={['individual', 'enterprise_staff']}><CoopLobby /></Guarded>} />
+      <Route path="/coop/:sessionId" element={<Guarded roles={['individual', 'enterprise_staff']}><CoopSession /></Guarded>} />
 
       {/* Enterprise Admin */}
       <Route path="/enterprise/admin/dashboard" element={<Guarded roles={['enterprise_admin']}><EnterpriseDashboard /></Guarded>} />

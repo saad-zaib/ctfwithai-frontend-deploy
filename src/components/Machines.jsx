@@ -13,6 +13,10 @@ import {
   Trash2,
   Flag,
   BookOpen,
+  Users,
+  Zap,
+  Trophy,
+  X,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
@@ -100,9 +104,9 @@ const ActionIconBtn = ({ onClick, disabled, title, bgColor, children }) => {
       onMouseEnter={() => setHov(true)}
       onMouseLeave={() => setHov(false)}
       style={{
-        width: 32,
-        height: 32,
-        borderRadius: 9,
+        width: 40,
+        height: 40,
+        borderRadius: 10,
         border: `1px solid ${bgColor}38`,
         background: hov ? bgColor + "28" : bgColor + "14",
         color: bgColor,
@@ -154,8 +158,266 @@ const WriteupButton = ({ machineId }) => {
   );
 };
 
+// ── Hack Together Invite Modal ────────────────────────────────────────────────
+const HackTogetherModal = ({ machine, onClose, navigate }) => {
+  const [mode, setMode]           = useState("coop");
+  const [query, setQuery]         = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+  const [selected, setSelected]   = useState(null); // { user_id, username }
+  const [friends, setFriends]     = useState([]);
+  const [searching, setSearching] = useState(false);
+  const [sending, setSending]     = useState(false);
+  const [sent, setSent]           = useState(null);
+  const userId = localStorage.getItem("userId") || "";
+  const searchTimer = React.useRef(null);
+
+  useEffect(() => {
+    api.getFriends(userId).then(d => setFriends(d.friends || [])).catch(() => {});
+  }, [userId]);
+
+  // Live search as user types
+  useEffect(() => {
+    clearTimeout(searchTimer.current);
+    if (!query.trim() || query.trim().length < 2) { setSearchResults([]); return; }
+    searchTimer.current = setTimeout(async () => {
+      setSearching(true);
+      try {
+        const res = await api.searchUsers(query.trim());
+        setSearchResults((res.users || res || []).filter(u => u.user_id !== userId));
+      } catch (_) {}
+      setSearching(false);
+    }, 350);
+  }, [query, userId]);
+
+  const send = async () => {
+    if (!selected) return;
+    setSending(true);
+    try {
+      const res = await api.inviteToSession(machine.machine_id, selected.user_id, mode);
+      setSent(res.session_id);
+    } catch (e) {
+      alert(e?.message || "Failed to send invite.");
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const C2 = {
+    bg: "#ffffff", border: "#e8e2db", accent: "#f97316",
+    accentBg: "rgba(249,115,22,0.08)", accentBdr: "rgba(249,115,22,0.22)",
+    green: "#16a34a", greenBg: "rgba(22,163,74,0.08)", greenBdr: "rgba(22,163,74,0.22)",
+    purple: "#7c3aed", purpleBg: "rgba(124,58,237,0.08)", purpleBdr: "rgba(124,58,237,0.22)",
+    text1: "#181818", text2: "#3d3d3d", text3: "#797979",
+  };
+
+  return (
+    <div style={{
+      position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)",
+      display: "flex", alignItems: "center", justifyContent: "center",
+      zIndex: 9999, fontFamily: "'DM Sans','Inter',sans-serif",
+    }} onClick={onClose}>
+      <div style={{
+        background: C2.bg, borderRadius: 18, padding: "28px 28px 24px",
+        width: 440, maxWidth: "92vw", boxShadow: "0 20px 60px rgba(0,0,0,0.18)",
+        border: `1px solid ${C2.border}`,
+      }} onClick={e => e.stopPropagation()}>
+
+        {/* Header */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+          <div>
+            <h3 style={{ fontSize: 18, fontWeight: 800, margin: 0 }}>Hack Together</h3>
+            <p style={{ fontSize: 12.5, color: C2.text3, margin: "3px 0 0" }}>
+              {machine.variant || machine.machine_id}
+            </p>
+          </div>
+          <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", padding: 4 }}>
+            <X style={{ width: 18, height: 18, color: C2.text3 }} />
+          </button>
+        </div>
+
+        {sent ? (
+          <div style={{ textAlign: "center", padding: "12px 0 8px" }}>
+            <CheckCircle style={{ width: 40, height: 40, color: C2.green, margin: "0 auto 12px" }} />
+            <p style={{ fontSize: 15, fontWeight: 700, marginBottom: 6 }}>Invite sent to {selected?.username}!</p>
+            <p style={{ fontSize: 13, color: C2.text3, marginBottom: 20 }}>
+              They'll get a notification — once they accept you'll hack together.
+            </p>
+            <button onClick={() => navigate(`/coop/${sent}`)} style={{
+              background: C2.accent, color: "white", border: "none",
+              borderRadius: 30, padding: "10px 20px", fontWeight: 700,
+              fontSize: 13, cursor: "pointer", width: "100%",
+            }}>
+              Open Session Room →
+            </button>
+          </div>
+        ) : (
+          <>
+            {/* Mode picker */}
+            <p style={{ fontSize: 12, fontWeight: 700, color: C2.text3, marginBottom: 10, letterSpacing: 0.5 }}>
+              SELECT MODE
+            </p>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 20 }}>
+              {[
+                { key: "coop", icon: Users,  label: "Co-op", sub: "Solve together, share points", color: C2.green,  bg: C2.greenBg,  bdr: C2.greenBdr },
+                { key: "race", icon: Trophy, label: "Race",  sub: "First to flag wins",           color: C2.purple, bg: C2.purpleBg, bdr: C2.purpleBdr },
+              ].map(({ key, icon: Icon, label, sub, color, bg, bdr }) => (
+                <button key={key} onClick={() => setMode(key)} style={{
+                  border: `2px solid ${mode === key ? bdr : C2.border}`,
+                  borderRadius: 12, padding: "14px 12px", cursor: "pointer",
+                  background: mode === key ? bg : "transparent",
+                  textAlign: "left", transition: "all 0.15s",
+                }}>
+                  <Icon style={{ width: 18, height: 18, color: mode === key ? color : C2.text3, marginBottom: 6 }} />
+                  <p style={{ fontSize: 13.5, fontWeight: 700, margin: "0 0 2px", color: mode === key ? C2.text1 : C2.text2 }}>{label}</p>
+                  <p style={{ fontSize: 11, color: C2.text3, margin: 0 }}>{sub}</p>
+                </button>
+              ))}
+            </div>
+
+            {/* Friend picker */}
+            <p style={{ fontSize: 12, fontWeight: 700, color: C2.text3, marginBottom: 8, letterSpacing: 0.5 }}>
+              INVITE A PLAYER
+            </p>
+
+            {/* Friends quick-select */}
+            {friends.length > 0 && (
+              <div style={{ marginBottom: 10 }}>
+                <p style={{ fontSize: 11, color: C2.text3, marginBottom: 6 }}>Your friends</p>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                  {friends.map(f => (
+                    <button key={f.user_id}
+                      onClick={() => { setSelected(f); setQuery(f.username); setSearchResults([]); }}
+                      style={{
+                        padding: "5px 12px", borderRadius: 30, fontSize: 12.5, fontWeight: 600,
+                        border: `1px solid ${selected?.user_id === f.user_id ? C2.accentBdr : C2.border}`,
+                        background: selected?.user_id === f.user_id ? C2.accentBg : "#f9f7f5",
+                        color: selected?.user_id === f.user_id ? C2.accent : C2.text2,
+                        cursor: "pointer",
+                      }}>
+                      {f.username}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Search box */}
+            <div style={{ position: "relative", marginBottom: 6 }}>
+              <input
+                value={query}
+                onChange={e => { setQuery(e.target.value); setSelected(null); }}
+                placeholder="Search by username…"
+                style={{
+                  width: "100%", border: `1px solid ${selected ? C2.accentBdr : C2.border}`,
+                  borderRadius: 10, padding: "10px 12px", fontSize: 13, outline: "none",
+                  fontFamily: "'DM Sans',sans-serif", boxSizing: "border-box",
+                  background: selected ? C2.accentBg : "#fff",
+                }}
+              />
+              {searching && (
+                <Loader style={{
+                  position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)",
+                  width: 14, height: 14, color: C2.text3, animation: "spin 1s linear infinite",
+                }} />
+              )}
+            </div>
+
+            {/* Search results dropdown */}
+            {searchResults.length > 0 && !selected && (
+              <div style={{
+                border: `1px solid ${C2.border}`, borderRadius: 10, overflow: "hidden",
+                marginBottom: 12, maxHeight: 180, overflowY: "auto",
+                boxShadow: "0 4px 16px rgba(0,0,0,0.08)",
+              }}>
+                {searchResults.map((u, i) => (
+                  <button key={u.user_id}
+                    onClick={() => { setSelected(u); setQuery(u.username); setSearchResults([]); }}
+                    style={{
+                      width: "100%", display: "flex", alignItems: "center", gap: 10,
+                      padding: "10px 14px", border: "none", cursor: "pointer",
+                      background: i % 2 === 0 ? "#fff" : "#f9f7f5",
+                      borderBottom: i < searchResults.length - 1 ? `1px solid ${C2.border}` : "none",
+                      textAlign: "left",
+                    }}>
+                    <div style={{
+                      width: 32, height: 32, borderRadius: "50%", flexShrink: 0,
+                      background: "linear-gradient(135deg,#f97316,#7c3aed)",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      fontSize: 13, fontWeight: 800, color: "white",
+                    }}>
+                      {(u.username || "?")[0].toUpperCase()}
+                    </div>
+                    <div>
+                      <p style={{ fontSize: 13.5, fontWeight: 700, margin: 0, color: C2.text1 }}>{u.username}</p>
+                      {u.full_name && <p style={{ fontSize: 11.5, color: C2.text3, margin: 0 }}>{u.full_name}</p>}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* Selected user pill */}
+            {selected && (
+              <div style={{
+                display: "flex", alignItems: "center", gap: 8, marginBottom: 14,
+                padding: "8px 12px", borderRadius: 30, border: `1px solid ${C2.accentBdr}`,
+                background: C2.accentBg, width: "fit-content",
+              }}>
+                <div style={{
+                  width: 22, height: 22, borderRadius: "50%",
+                  background: "linear-gradient(135deg,#f97316,#7c3aed)",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  fontSize: 11, fontWeight: 800, color: "white",
+                }}>
+                  {selected.username[0].toUpperCase()}
+                </div>
+                <span style={{ fontSize: 13, fontWeight: 700, color: C2.accent }}>{selected.username}</span>
+                <button onClick={() => { setSelected(null); setQuery(""); }} style={{
+                  background: "none", border: "none", cursor: "pointer", padding: 0, lineHeight: 1,
+                }}>
+                  <X style={{ width: 13, height: 13, color: C2.accent }} />
+                </button>
+              </div>
+            )}
+
+            {!selected && !query && (
+              <p style={{ fontSize: 12, color: C2.text3, marginBottom: 14 }}>
+                Type at least 2 characters to search all players on the platform.
+              </p>
+            )}
+
+            {/* Mode description */}
+            <div style={{
+              padding: "10px 12px", borderRadius: 10, marginBottom: 18,
+              background: mode === "coop" ? C2.greenBg : C2.purpleBg,
+              border: `1px solid ${mode === "coop" ? C2.greenBdr : C2.purpleBdr}`,
+              fontSize: 12.5, color: C2.text2, lineHeight: 1.5,
+            }}>
+              {mode === "coop"
+                ? "Both of you connect to the same lab. First to find the flag gets 60% of points, second gets 40%. Chat live while you hack."
+                : "Each of you gets your own copy of the lab. Race to submit the flag first. Winner gets full points, loser gets 30%."}
+            </div>
+
+            <button onClick={send} disabled={sending || !selected} style={{
+              width: "100%", background: selected ? C2.accent : "#e5e7eb",
+              color: "white", border: "none", borderRadius: 30,
+              padding: "12px", fontWeight: 800, fontSize: 14,
+              cursor: selected ? "pointer" : "not-allowed",
+              display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+            }}>
+              {sending ? <Loader style={{ width: 16, height: 16, animation: "spin 1s linear infinite" }} /> : <Zap style={{ width: 16, height: 16 }} />}
+              {sending ? "Sending invite…" : selected ? `Invite ${selected.username}` : "Select a player first"}
+            </button>
+          </>
+        )}
+      </div>
+    </div>
+  );
+};
+
 const Machines = () => {
   const [userId] = useState(() => localStorage.getItem("userId") || "user_default");
+  const [hackInviteMachine, setHackInviteMachine] = useState(null);
   const [machines, setMachines] = useState(() => api.peekMachinesCache() || []);
   const [isLoading, setIsLoading] = useState(
     () => (api.peekMachinesCache() || []).length === 0,
@@ -574,7 +836,7 @@ const Machines = () => {
         .mach-refresh-btn:hover { border-color: ${C.accentBdr} !important; color: ${C.accent} !important; }
       `}</style>
 
-      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "36px 32px" }}>
+      <div className="resp-page-pad" style={{ maxWidth: 1200, margin: "0 auto", padding: "36px 32px" }}>
         {/* ══ HEADER ══ */}
         <div
           style={{
@@ -742,7 +1004,7 @@ const Machines = () => {
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(520px, 1fr))",
+              gridTemplateColumns: "repeat(auto-fill, minmax(min(520px, 100%), 1fr))",
               gap: 16,
             }}
           >
@@ -1025,7 +1287,7 @@ const Machines = () => {
                   </div>
 
                   {/* ── Row 3: Auto-delete timer + +1h ── */}
-                  <div style={{ borderTop: `1px solid ${C.border}`, padding: "10px 18px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                  <div style={{ borderTop: `1px solid ${C.border}`, padding: "10px 18px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 6 }}>
                     <span
                       style={{
                         fontSize: 11,
@@ -1053,6 +1315,19 @@ const Machines = () => {
                       }}
                     >
                       {containerAction[machine.machine_id] === "extend" ? "..." : "Extend"}
+                    </button>
+                    <button
+                      onClick={() => setHackInviteMachine(machine)}
+                      style={{
+                        border: "1px solid rgba(249,115,22,0.3)",
+                        borderRadius: 6, padding: "3px 10px", fontSize: 11,
+                        fontWeight: 700, cursor: "pointer",
+                        background: "rgba(249,115,22,0.07)", color: "#f97316",
+                        display: "flex", alignItems: "center", gap: 5,
+                        fontFamily: "'DM Sans', sans-serif",
+                      }}
+                    >
+                      <Users style={{ width: 11, height: 11 }} /> Hack Together
                     </button>
                   </div>
 
@@ -1269,6 +1544,13 @@ const Machines = () => {
           </div>
         )}
       </div>
+      {hackInviteMachine && (
+        <HackTogetherModal
+          machine={hackInviteMachine}
+          onClose={() => setHackInviteMachine(null)}
+          navigate={navigate}
+        />
+      )}
     </div>
   );
 };

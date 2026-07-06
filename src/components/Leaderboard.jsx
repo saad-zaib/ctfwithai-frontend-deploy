@@ -514,7 +514,13 @@ const Leaderboard = () => {
                               letterSpacing: -0.2,
                             }}
                           >
-                            {entry.username || entry.user_id}
+                            <a
+                              href={`/user/${encodeURIComponent(entry.username || entry.user_id)}`}
+                              style={{ color: "inherit", textDecoration: "none" }}
+                              onClick={e => e.stopPropagation()}
+                            >
+                              {entry.username || entry.user_id}
+                            </a>
                           </span>
 
                           {/* First blood badge */}

@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard
+Disallow: /machines
+Disallow: /campaigns
+Disallow: /vuln-ai
+Disallow: /profile
+Disallow: /enterprise/
+Disallow: /debug
+
+Sitemap: https://www.ctfwithai.com/sitemap.xml

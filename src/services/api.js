@@ -99,13 +99,14 @@ class APIService {
   // ── Core request helper ──────────────────────────────────────────────────────
   async request(endpoint, options = {}) {
     try {
+      const { headers: extraHeaders, ...restOptions } = options;
       const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+        ...restOptions,
         headers: {
           'Content-Type': 'application/json',
           ...this._authHeaders(),
-          ...options.headers,
+          ...extraHeaders,
         },
-        ...options,
       });
 
       if (!response.ok) {
@@ -470,6 +471,25 @@ class APIService {
     return this.request(`/api/users/${encodeURIComponent(userId)}/progress`);
   }
 
+  async getUserSkills(userId) {
+    return this.request(`/api/users/${encodeURIComponent(userId)}/skills`);
+  }
+
+  async getUserRecommendations(userId, topN = 5) {
+    return this.request(`/api/users/${encodeURIComponent(userId)}/recommendations?top_n=${topN}`);
+  }
+
+  async logInteraction(userId, vulnType, outcome, machineId = null) {
+    return this.request(`/api/users/${encodeURIComponent(userId)}/interaction`, {
+      method: 'POST',
+      body: JSON.stringify({ vuln_type: vulnType, outcome, machine_id: machineId }),
+    });
+  }
+
+  async getTrending() {
+    return this.request('/api/recommendations/trending');
+  }
+
   // ── Leaderboard ───────────────────────────────────────────────────────────────
   async getLeaderboard(limit = 100, timeframe = 'all_time') {
     return this.request(`/api/leaderboard?limit=${limit}&timeframe=${timeframe}`);
@@ -492,6 +512,163 @@ class APIService {
   // ── Health Check ──────────────────────────────────────────────────────────────
   async healthCheck() {
     return this.request('/health');
+  }
+
+  // ── Social ────────────────────────────────────────────────────────────────────
+  async getPublicProfile(username) {
+    return this.request(`/api/social/profiles/${encodeURIComponent(username)}`);
+  }
+
+  async sendFriendRequest(addresseeId) {
+    return this.request(`/api/social/friends/request/${addresseeId}`, { method: 'POST' });
+  }
+
+  async respondFriendRequest(friendshipId, action) {
+    return this.request(`/api/social/friends/respond/${friendshipId}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action }),
+    });
+  }
+
+  async removeFriend(friendId) {
+    return this.request(`/api/social/friends/${friendId}`, { method: 'DELETE' });
+  }
+
+  async getFriends(userId) {
+    return this.request(`/api/social/friends/${userId}`);
+  }
+
+  async getPendingRequests(userId) {
+    return this.request(`/api/social/friends/${userId}/pending`);
+  }
+
+  async getNotifications(userId, limit = 30) {
+    return this.request(`/api/social/notifications/${userId}?limit=${limit}`);
+  }
+
+  async getUnreadCount(userId) {
+    return this.request(`/api/social/notifications/${userId}/unread-count`);
+  }
+
+  async markNotificationsRead(userId, notifIds = null) {
+    return this.request(`/api/social/notifications/${userId}/read`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ notif_ids: notifIds }),
+    });
+  }
+
+  async setPrivacy(userId, isPrivate) {
+    return this.request(`/api/social/privacy/${userId}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ is_private: isPrivate }),
+    });
+  }
+
+  // ── Co-op / Race sessions ────────────────────────────────────────────────────
+  async inviteToSession(machineId, friendId, mode) {
+    return this.request('/api/coop/invite', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ machine_id: machineId, friend_id: friendId, mode }),
+    });
+  }
+
+  async respondToSession(sessionId, action) {
+    return this.request(`/api/coop/respond/${sessionId}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action }),
+    });
+  }
+
+  async getCoopSession(sessionId) {
+    return this.request(`/api/coop/session/${sessionId}`);
+  }
+
+  async getCoopSessions() {
+    return this.request('/api/coop/sessions');
+  }
+
+  async sendChatMessage(sessionId, message) {
+    return this.request(`/api/coop/session/${sessionId}/chat`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message }),
+    });
+  }
+
+  async getChatMessages(sessionId) {
+    return this.request(`/api/coop/session/${sessionId}/chat`);
+  }
+
+  async submitCoopFlag(sessionId, flag) {
+    return this.request(`/api/coop/session/${sessionId}/solve`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ flag }),
+    });
+  }
+
+  async cancelCoopSession(sessionId) {
+    return this.request(`/api/coop/session/${sessionId}/cancel`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({}),
+    });
+  }
+
+  // ── Signal ──────────────────────────────────────────────────────────────────
+  async getSignalFeed(limit = 50) {
+    return this.request(`/api/signal/feed?limit=${limit}`);
+  }
+
+  async createPing(body, imageFile = null, parentId = null, boostOfId = null) {
+    const token = localStorage.getItem('token') || '';
+    const form = new FormData();
+    if (body)       form.append('body', body);
+    if (parentId)   form.append('parent_id', parentId);
+    if (boostOfId)  form.append('boost_of_id', boostOfId);
+    if (imageFile)  form.append('image', imageFile);
+    const res = await fetch(`${API_BASE_URL}/api/signal/ping`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}` },
+      body: form,
+    });
+    if (!res.ok) {
+      const e = await res.json().catch(() => ({}));
+      const detail = e.detail;
+      if (detail && typeof detail === 'object' && detail.code === 'content_blocked') {
+        const err = new Error(detail.message || 'Ping blocked by content filter.');
+        err.blocked = true;
+        err.reason  = detail.reason || '';
+        throw err;
+      }
+      throw new Error(typeof detail === 'string' ? detail : 'Failed to ping');
+    }
+    return res.json();
+  }
+
+  async getPingThread(pingId) {
+    return this.request(`/api/signal/${pingId}/thread`);
+  }
+
+  async likePing(pingId) {
+    return this.request(`/api/signal/${pingId}/like`, { method: 'POST' });
+  }
+
+  async unlikePing(pingId) {
+    return this.request(`/api/signal/${pingId}/like`, { method: 'DELETE' });
+  }
+
+  async deletePing(pingId) {
+    return this.request(`/api/signal/${pingId}`, { method: 'DELETE' });
+  }
+
+  async getUserPings(userId, limit = 30) {
+    return this.request(`/api/signal/user/${userId}?limit=${limit}`);
   }
 }
 
