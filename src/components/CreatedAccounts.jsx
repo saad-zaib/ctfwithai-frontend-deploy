@@ -4,7 +4,7 @@ import {
     Loader, AlertCircle, CheckCircle, Shield, Search, RefreshCw
 } from 'lucide-react';
 
-const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+const API_BASE = process.env.REACT_APP_API_URL || "";
 
 // ─── Created Accounts — Enterprise Admin only ────────────────────────────────
 const CreatedAccounts = () => {

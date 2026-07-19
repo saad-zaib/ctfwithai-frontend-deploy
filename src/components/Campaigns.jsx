@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import CampaignShare from "./CampaignShare";
 import CampaignAssign from "./CampaignAssign";
+import { T } from '../design/tokens';
 
 const CAT_META = {
   injection: { color: "#3b82f6", label: "Injection", emoji: "💉" },
@@ -30,18 +31,18 @@ const CAT_META = {
 
 
 const C = {
-  pageBg: "#fbeae2ff",
-  sectionBg: "#fbeae2ff",
-  cardBg: "#ffffff",
-  text1: "#181818",
-  text2: "#3d3d3d",
-  text3: "#797979ff",
-  border: "#e8e2db",
-  accent: "#f97316",
-  accentBg: "rgba(249,115,22,0.08)",
-  accentBdr: "rgba(249,115,22,0.22)",
-  shadow: "rgba(0,0,0,0.06)",
-  shadowMd: "rgba(0,0,0,0.10)",
+  pageBg:    T.pageBg,
+  sectionBg: T.pageBg,
+  cardBg:    T.cardBg,
+  text1:     T.text1,
+  text2:     T.text2,
+  text3:     T.text3,
+  border:    T.border,
+  accent:    T.accent,
+  accentBg:  T.accentBg,
+  accentBdr: T.accentBorder,
+  shadow:    T.shadowCard,
+  shadowMd:  T.shadowCardHover,
 };
 
 /* ── Progress Ring ── */
@@ -236,15 +237,14 @@ const Campaigns = () => {
       style={{
         minHeight: "100vh",
         background: C.pageBg,
-        fontFamily: "'DM Sans','Inter',sans-serif",
+        fontFamily: T.font,
         color: C.text1,
         position: "relative",
       }}
     >
 
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&display=swap');
-        @keyframes fadeUp { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:none} }
+@keyframes fadeUp { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:none} }
         @keyframes spin   { to{transform:rotate(360deg)} }
         .anim-row { animation: fadeUp 0.4s ease both; }
 
@@ -357,7 +357,7 @@ const Campaigns = () => {
                   fontWeight: 800,
                   color: C.text1,
                   letterSpacing: -0.6,
-                  fontFamily: "'DM Sans',sans-serif",
+                  fontFamily: T.font,
                 }}
               >
                 Campaign Manager
@@ -368,7 +368,7 @@ const Campaigns = () => {
                 color: C.text3,
                 fontSize: 13.5,
                 marginLeft: 44,
-                fontFamily: "'DM Sans',sans-serif",
+                fontFamily: T.font,
               }}
             >
               Create, manage, and track your cybersecurity campaigns
@@ -452,7 +452,7 @@ const Campaigns = () => {
                     fontSize: 24,
                     fontWeight: 800,
                     color: C.text1,
-                    fontFamily: "'DM Sans',sans-serif",
+                    fontFamily: T.font,
                     lineHeight: 1,
                   }}
                 >
@@ -463,7 +463,7 @@ const Campaigns = () => {
                     fontSize: 12,
                     color: C.text3,
                     marginTop: 3,
-                    fontFamily: "'DM Sans',sans-serif",
+                    fontFamily: T.font,
                   }}
                 >
                   {s.label}
@@ -489,7 +489,7 @@ const Campaigns = () => {
                   fontSize: 13,
                   fontWeight: 700,
                   color: C.text1,
-                  fontFamily: "'DM Sans',sans-serif",
+                  fontFamily: T.font,
                 }}
               >
                 Assigned Campaigns
@@ -542,7 +542,7 @@ const Campaigns = () => {
                             fontSize: 14,
                             fontWeight: 700,
                             color: C.text1,
-                            fontFamily: "'DM Sans',sans-serif",
+                            fontFamily: T.font,
                             whiteSpace: "nowrap",
                             overflow: "hidden",
                             textOverflow: "ellipsis",
@@ -555,7 +555,7 @@ const Campaigns = () => {
                             marginTop: 2,
                             fontSize: 11,
                             color: C.text3,
-                            fontFamily: "'DM Sans',sans-serif",
+                            fontFamily: T.font,
                           }}
                         >
                           {campaign.machine_count || 0} machines · {campaign.time_limit_minutes || 30} min · {(assignment.status || "pending").toUpperCase()}
@@ -609,7 +609,7 @@ const Campaigns = () => {
               style={{
                 fontSize: 12,
                 color: C.text3,
-                fontFamily: "'DM Sans',sans-serif",
+                fontFamily: T.font,
               }}
             >
               {filteredCampaigns.length} campaign
@@ -657,7 +657,7 @@ const Campaigns = () => {
                 style={{
                   color: C.text3,
                   fontSize: 13.5,
-                  fontFamily: "'DM Sans',sans-serif",
+                  fontFamily: T.font,
                 }}
               >
                 No campaigns yet — click{" "}
@@ -730,7 +730,7 @@ const Campaigns = () => {
                                 fontSize: 10,
                                 fontWeight: 800,
                                 color: C.text1,
-                                fontFamily: "'DM Sans',sans-serif",
+                                fontFamily: T.font,
                               }}
                             >
                               {pct}%
@@ -753,7 +753,7 @@ const Campaigns = () => {
                               fontSize: 14,
                               fontWeight: 700,
                               color: isComplete ? "#16a34a" : C.text1,
-                              fontFamily: "'DM Sans',sans-serif",
+                              fontFamily: T.font,
                               whiteSpace: "nowrap",
                               overflow: "hidden",
                               textOverflow: "ellipsis",
@@ -782,7 +782,7 @@ const Campaigns = () => {
                             gap: 8,
                             fontSize: 12,
                             color: C.text3,
-                            fontFamily: "'DM Sans',sans-serif",
+                            fontFamily: T.font,
                           }}
                         >
                           <span>{campaign.machine_count} machines</span>
@@ -928,7 +928,7 @@ const Campaigns = () => {
                     fontWeight: 800,
                     color: C.text1,
                     letterSpacing: -0.3,
-                    fontFamily: "'DM Sans',sans-serif",
+                    fontFamily: T.font,
                   }}
                 >
                   Create New Campaign
@@ -984,7 +984,7 @@ const Campaigns = () => {
                     letterSpacing: 1,
                     textTransform: "uppercase",
                     marginBottom: 7,
-                    fontFamily: "'DM Sans',sans-serif",
+                    fontFamily: T.font,
                   }}
                 >
                   Campaign Name *
@@ -1009,7 +1009,7 @@ const Campaigns = () => {
                     letterSpacing: 1,
                     textTransform: "uppercase",
                     marginBottom: 8,
-                    fontFamily: "'DM Sans',sans-serif",
+                    fontFamily: T.font,
                   }}
                 >
                   Select Machines *
@@ -1029,7 +1029,7 @@ const Campaigns = () => {
                         fontSize: 13,
                         color: C.text3,
                         marginBottom: 8,
-                        fontFamily: "'DM Sans',sans-serif",
+                        fontFamily: T.font,
                       }}
                     >
                       No machines available.
@@ -1043,7 +1043,7 @@ const Campaigns = () => {
                         background: "none",
                         border: "none",
                         cursor: "pointer",
-                        fontFamily: "'DM Sans',sans-serif",
+                        fontFamily: T.font,
                       }}
                     >
                       Load Machines
@@ -1119,7 +1119,7 @@ const Campaigns = () => {
                                 fontSize: 13.5,
                                 fontWeight: 700,
                                 color: C.text1,
-                                fontFamily: "'DM Sans',sans-serif",
+                                fontFamily: T.font,
                                 overflow: "hidden",
                                 textOverflow: "ellipsis",
                                 whiteSpace: "nowrap",
@@ -1131,7 +1131,7 @@ const Campaigns = () => {
                               style={{
                                 fontSize: 11.5,
                                 color: C.text3,
-                                fontFamily: "'DM Sans',sans-serif",
+                                fontFamily: T.font,
                               }}
                             >
                               {m.variant || "custom"}
@@ -1147,7 +1147,7 @@ const Campaigns = () => {
                     fontSize: 12,
                     color: C.text3,
                     marginTop: 6,
-                    fontFamily: "'DM Sans',sans-serif",
+                    fontFamily: T.font,
                   }}
                 >
                   {selectedMachines.length} machine
@@ -1167,7 +1167,7 @@ const Campaigns = () => {
                       letterSpacing: 1,
                       textTransform: "uppercase",
                       marginBottom: 8,
-                      fontFamily: "'DM Sans',sans-serif",
+                      fontFamily: T.font,
                     }}
                   >
                     Time Limit (minutes)
@@ -1195,7 +1195,7 @@ const Campaigns = () => {
                       style={{
                         fontSize: 12,
                         color: C.text3,
-                        fontFamily: "'DM Sans',sans-serif",
+                        fontFamily: T.font,
                       }}
                     >
                       Default: 30 min · Max: 480 min
@@ -1208,7 +1208,7 @@ const Campaigns = () => {
                   style={{
                     fontSize: 12.5,
                     color: C.text3,
-                    fontFamily: "'DM Sans',sans-serif",
+                    fontFamily: T.font,
                     display: "flex",
                     alignItems: "center",
                     gap: 6,
@@ -1244,7 +1244,7 @@ const Campaigns = () => {
                     style={{
                       color: "#dc2626",
                       fontSize: 12.5,
-                      fontFamily: "'DM Sans',sans-serif",
+                      fontFamily: T.font,
                     }}
                   >
                     {error}
@@ -1318,7 +1318,7 @@ const Campaigns = () => {
                         fontSize: 13.5,
                         fontWeight: 700,
                         color: "#16a34a",
-                        fontFamily: "'DM Sans',sans-serif",
+                        fontFamily: T.font,
                       }}
                     >
                       Campaign Created!
@@ -1327,7 +1327,7 @@ const Campaigns = () => {
                       style={{
                         fontSize: 12,
                         color: C.text3,
-                        fontFamily: "'DM Sans',sans-serif",
+                        fontFamily: T.font,
                       }}
                     >
                       {createdCampaign.campaign_name} ·{" "}
@@ -1380,7 +1380,7 @@ const Campaigns = () => {
                             fontSize: 13,
                             fontWeight: 700,
                             color: C.text1,
-                            fontFamily: "'DM Sans',sans-serif",
+                            fontFamily: T.font,
                           }}
                         >
                           {m.variant}

@@ -13,6 +13,8 @@ import {
   ChevronRight,
 } from "lucide-react";
 import hackforgeLogo from "../assets/logo.png";
+import api from "../services/api";
+import { T } from '../design/tokens';
 
 // ── Session persistence helpers ──────────────────────────────────────────────
 const SESSIONS_KEY = (uid) => `vulnai_sessions_${uid || "anon"}`;
@@ -42,25 +44,22 @@ function newSessionId(uid) {
   return `${uid || "anon"}_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
 }
 
-/* ─────────────────────────────────────────────
-   Aurius Design Tokens
-───────────────────────────────────────────── */
 const C = {
-  pageBg: "#fbeae2",
-  sectionBg: "#fbeae2",
-  cardBg: "#ffffff",
-  text1: "#181818",
-  text2: "#3d3d3d",
-  text3: "#797979",
-  border: "#e8e2db",
-  accent: "#f97316",
-  accentBg: "rgba(249,115,22,0.08)",
-  accentBdr: "rgba(249,115,22,0.22)",
-  shadow: "rgba(0,0,0,0.06)",
-  shadowMd: "rgba(0,0,0,0.10)",
+  pageBg:    T.pageBg,
+  sectionBg: T.pageBg,
+  cardBg:    T.cardBg,
+  text1:     T.text1,
+  text2:     T.text2,
+  text3:     T.text3,
+  border:    T.border,
+  accent:    T.accent,
+  accentBg:  T.accentBg,
+  accentBdr: T.accentBorder,
+  shadow:    T.shadowCard,
+  shadowMd:  T.shadowCardHover,
 };
 
-const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
+const API_BASE = process.env.REACT_APP_API_URL || "";
 const POLL_INTERVAL_MS = 5000;
 const MAX_PROMPT_WORDS = 500;
 const MAX_REVIEW_CHARS = 500;
@@ -132,7 +131,7 @@ const JobCard = ({ job }) => {
         marginTop: 6,
         padding: "8px 0",
         fontSize: 12,
-        fontFamily: "'DM Sans', sans-serif",
+        fontFamily: T.font,
         color: C.text3,
         display: "flex",
         alignItems: "center",
@@ -187,7 +186,7 @@ const WelcomeScreen = ({ displayName }) => (
           fontWeight: 700,
           color: C.text1,
           letterSpacing: -0.4,
-          fontFamily: "'DM Sans', sans-serif",
+          fontFamily: T.font,
           marginBottom: 16,
           textAlign: "center",
         }}
@@ -306,7 +305,7 @@ const Message = ({ msg, jobMap }) => {
               letterSpacing: 1.4,
               textTransform: "uppercase",
               color: C.accent,
-              fontFamily: "'DM Sans', sans-serif",
+              fontFamily: T.font,
               paddingLeft: 2,
             }}
           >
@@ -320,7 +319,7 @@ const Message = ({ msg, jobMap }) => {
             borderRadius: 8,
             fontSize: 13,
             lineHeight: 1.65,
-            fontFamily: "'DM Sans', sans-serif",
+            fontFamily: T.font,
             ...(isUser
               ? {
                   background: C.accent,
@@ -344,7 +343,7 @@ const Message = ({ msg, jobMap }) => {
             color: C.text3,
             paddingLeft: 2,
             paddingRight: 2,
-            fontFamily: "'DM Sans', sans-serif",
+            fontFamily: T.font,
             opacity: 0.6,
           }}
         >
@@ -387,7 +386,7 @@ const TypingIndicator = () => (
         border: `1px solid ${C.border}`,
         fontSize: 12,
         color: C.text3,
-        fontFamily: "'DM Sans', sans-serif",
+        fontFamily: T.font,
       }}
     >
       Thinking...
@@ -545,7 +544,7 @@ const Sidebar = ({ sessions, activeId, onNew, onSelect, onDelete, collapsed, onT
           width: "100%", display: "flex", alignItems: "center", gap: 7,
           background: C.accent, border: "none",
           borderRadius: 8, padding: "8px 12px", cursor: "pointer", color: "#fff",
-          fontSize: 13, fontWeight: 700, fontFamily: "'DM Sans',sans-serif",
+          fontSize: 13, fontWeight: 700, fontFamily: T.font,
         }}>
           <Plus style={{ width: 14, height: 14, flexShrink: 0 }} /> New Chat
         </button>
@@ -558,7 +557,7 @@ const Sidebar = ({ sessions, activeId, onNew, onSelect, onDelete, collapsed, onT
         {sessions.length === 0 ? (
           <div style={{ textAlign: "center", padding: "28px 12px" }}>
             <MessageSquare style={{ width: 24, height: 24, color: C.border, margin: "0 auto 8px" }} />
-            <p style={{ fontSize: 12, color: C.text3, fontFamily: "'DM Sans',sans-serif", margin: 0 }}>
+            <p style={{ fontSize: 12, color: C.text3, fontFamily: T.font, margin: 0 }}>
               No chats yet.<br />Start a new chat!
             </p>
           </div>
@@ -566,7 +565,7 @@ const Sidebar = ({ sessions, activeId, onNew, onSelect, onDelete, collapsed, onT
           <>
             <p style={{
               fontSize: 10, fontWeight: 700, color: C.text3, letterSpacing: 0.8,
-              padding: "4px 6px 6px", fontFamily: "'DM Sans',sans-serif", margin: 0,
+              padding: "4px 6px 6px", fontFamily: T.font, margin: 0,
             }}>
               RECENT
             </p>
@@ -579,7 +578,7 @@ const Sidebar = ({ sessions, activeId, onNew, onSelect, onDelete, collapsed, onT
                   background: s.id === activeId ? C.accentBg : "transparent",
                   border: `1px solid ${s.id === activeId ? C.accentBdr : "transparent"}`,
                   marginBottom: 2, transition: "background 0.12s",
-                  fontFamily: "'DM Sans',sans-serif",
+                  fontFamily: T.font,
                 }}>
                 <MessageSquare style={{ width: 13, height: 13, flexShrink: 0, color: s.id === activeId ? C.accent : C.text3 }} />
                 <span style={{
@@ -833,6 +832,7 @@ export default function LabChat() {
                   delete pollingRef.current[jobId];
                   refreshReviewStatus();
                   scheduleReviewStatusRetries();
+                  api.getMachines({ forceRefresh: true }).catch(() => {});
                 }
               }
             } catch (_) {}
@@ -867,6 +867,8 @@ export default function LabChat() {
             if (normalizedStatus === "done") {
               refreshReviewStatus();
               scheduleReviewStatusRetries();
+              // Bust the machines cache so Dashboard/Machines tabs see the new lab immediately
+              api.getMachines({ forceRefresh: true }).catch(() => {});
             }
             if (normalizedStatus === "failed") {
               const note = `Oops — our lab blew up (not the fun kind). Give it another shot after sometime and we promise to behave.`;
@@ -1040,7 +1042,7 @@ export default function LabChat() {
   };
 
   return (
-    <div style={{ display: "flex", height: "calc(100dvh - 73px)", fontFamily: "'DM Sans', sans-serif" }}>
+    <div style={{ display: "flex", height: "calc(100dvh - 73px)", fontFamily: T.font }}>
       {!isMobileView && (
         <Sidebar
           sessions={sessions}
@@ -1062,8 +1064,7 @@ export default function LabChat() {
       }}
     >
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&display=swap');
-        @keyframes spin        { to { transform:rotate(360deg); } }
+@keyframes spin        { to { transform:rotate(360deg); } }
         @keyframes pulse       { 0%,100% { opacity:1; } 50% { opacity:0.35; } }
         @keyframes slideUpFade { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
         .lab-scroll::-webkit-scrollbar       { width: 4px; }
@@ -1131,10 +1132,10 @@ export default function LabChat() {
               {/* header */}
               <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 14 }}>
                 <div>
-                  <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: C.text1, fontFamily: "'DM Sans', sans-serif", letterSpacing: -0.2 }}>
+                  <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: C.text1, fontFamily: T.font, letterSpacing: -0.2 }}>
                     Quick Feedback
                   </p>
-                  <p style={{ margin: "3px 0 0", fontSize: 12, color: C.text3, fontFamily: "'DM Sans', sans-serif" }}>
+                  <p style={{ margin: "3px 0 0", fontSize: 12, color: C.text3, fontFamily: T.font }}>
                     Would you like to pay for this service in future?
                   </p>
                 </div>
@@ -1193,7 +1194,7 @@ export default function LabChat() {
                       >
                         {selected ? icon : ""}
                       </span>
-                      <span style={{ fontSize: 12.5, fontWeight: selected ? 700 : 500, color: selected ? accentColor : C.text2, fontFamily: "'DM Sans', sans-serif", transition: "color 0.18s" }}>
+                      <span style={{ fontSize: 12.5, fontWeight: selected ? 700 : 500, color: selected ? accentColor : C.text2, fontFamily: T.font, transition: "color 0.18s" }}>
                         {label}
                       </span>
                     </button>
@@ -1210,7 +1211,7 @@ export default function LabChat() {
                 }}
               >
                 <div style={{ paddingTop: 12 }}>
-                  <p style={{ margin: "0 0 6px", fontSize: 11.5, fontWeight: 600, color: C.text2, fontFamily: "'DM Sans', sans-serif" }}>
+                  <p style={{ margin: "0 0 6px", fontSize: 11.5, fontWeight: 600, color: C.text2, fontFamily: T.font }}>
                     Why? <span style={{ fontWeight: 400, color: C.text3 }}>(tell us more)</span>
                   </p>
                   <textarea
@@ -1227,7 +1228,7 @@ export default function LabChat() {
                       background: C.sectionBg,
                       color: C.text1,
                       fontSize: 12.5,
-                      fontFamily: "'DM Sans', sans-serif",
+                      fontFamily: T.font,
                       resize: "none",
                       outline: "none",
                       boxSizing: "border-box",
@@ -1250,7 +1251,7 @@ export default function LabChat() {
                         }}
                       />
                     </div>
-                    <span style={{ fontSize: 10, color: C.text3, fontFamily: "'DM Sans', sans-serif", flexShrink: 0 }}>
+                    <span style={{ fontSize: 10, color: C.text3, fontFamily: T.font, flexShrink: 0 }}>
                       {reviewWhy.length}/{MAX_REVIEW_CHARS}
                     </span>
                   </div>
@@ -1261,7 +1262,7 @@ export default function LabChat() {
               <div style={{ marginTop: 14, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
                 <div>
                   {!!reviewError && (
-                    <p style={{ margin: 0, fontSize: 11.5, color: "#dc2626", fontWeight: 600, fontFamily: "'DM Sans', sans-serif" }}>
+                    <p style={{ margin: 0, fontSize: 11.5, color: "#dc2626", fontWeight: 600, fontFamily: T.font }}>
                       {reviewError}
                     </p>
                   )}
@@ -1283,7 +1284,7 @@ export default function LabChat() {
                     display: "flex",
                     alignItems: "center",
                     gap: 6,
-                    fontFamily: "'DM Sans', sans-serif",
+                    fontFamily: T.font,
                   }}
                 >
                   {reviewSubmitting && (
@@ -1299,21 +1300,37 @@ export default function LabChat() {
           {isBuilding && (
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10, padding: "8px 12px", borderRadius: 8, background: C.accentBg, border: `1px solid ${C.accentBdr}` }}>
               <span style={{ width: 7, height: 7, borderRadius: "50%", background: C.accent, flexShrink: 0, animation: "pulse 1.4s ease-in-out infinite" }} />
-              <span style={{ fontSize: 12, color: C.accent, fontFamily: "'DM Sans', sans-serif", fontWeight: 600 }}>
+              <span style={{ fontSize: 12, color: C.accent, fontFamily: T.font, fontWeight: 600 }}>
                 Your lab is building — input is locked until it completes.
               </span>
             </div>
           )}
           {sessionSpent && !isBuilding && (
-            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10, padding: "8px 12px", borderRadius: 8, background: "rgba(22,163,74,0.07)", border: "1px solid rgba(22,163,74,0.2)" }}>
-              <span style={{ fontSize: 13, flexShrink: 0 }}>✓</span>
-              <span style={{ fontSize: 12, color: "#15803d", fontFamily: "'DM Sans', sans-serif", fontWeight: 600 }}>
-                Lab built. Start a new session to generate another.
-              </span>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 10, padding: "8px 12px", borderRadius: 8, background: "rgba(22,163,74,0.07)", border: "1px solid rgba(22,163,74,0.2)" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <span style={{ fontSize: 13, flexShrink: 0 }}>✓</span>
+                <span style={{ fontSize: 12, color: "#15803d", fontFamily: T.font, fontWeight: 600 }}>
+                  Lab built.
+                </span>
+              </div>
+              <button
+                onClick={startNewChat}
+                style={{
+                  fontSize: 12, fontWeight: 600, color: "#15803d",
+                  background: "rgba(22,163,74,0.12)", border: "1px solid rgba(22,163,74,0.3)",
+                  borderRadius: 6, padding: "4px 10px", cursor: "pointer",
+                  fontFamily: T.font, whiteSpace: "nowrap",
+                  transition: "background 0.15s",
+                }}
+                onMouseEnter={e => e.currentTarget.style.background = "rgba(22,163,74,0.22)"}
+                onMouseLeave={e => e.currentTarget.style.background = "rgba(22,163,74,0.12)"}
+              >
+                + New Session
+              </button>
             </div>
           )}
           {quotaBlock && !isBuilding && !sessionSpent && (
-            <p style={{ fontSize: 12, color: C.text1, fontFamily: "'DM Sans', sans-serif", marginBottom: 8 }}>
+            <p style={{ fontSize: 12, color: C.text1, fontFamily: T.font, marginBottom: 8 }}>
               Generation limit reached.{" "}
               <span style={{ color: C.text3 }}>
                 {(() => {
@@ -1375,7 +1392,7 @@ export default function LabChat() {
                 fontSize: 13,
                 color: C.text1,
                 outline: "none",
-                fontFamily: "'DM Sans', sans-serif",
+                fontFamily: T.font,
                 lineHeight: 1.45,
                 maxHeight: 170,
                 overflowY: "auto",
@@ -1429,7 +1446,7 @@ export default function LabChat() {
               marginTop: 8,
               textAlign: "center",
               letterSpacing: 0.6,
-              fontFamily: "'DM Sans', sans-serif",
+              fontFamily: T.font,
             }}
           >
             Enter to send · Shift+Enter for new line · Vuln AI can make
@@ -1443,7 +1460,7 @@ export default function LabChat() {
                 marginTop: 6,
                 textAlign: "center",
                 fontWeight: 600,
-                fontFamily: "'DM Sans', sans-serif",
+                fontFamily: T.font,
               }}
             >
               {promptWarning}

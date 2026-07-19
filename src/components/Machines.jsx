@@ -20,57 +20,24 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
+import { T } from "../design/tokens";
+import { PillTag } from "./ui/Badge";
 
-/* ─────────────────────────────────────────────
-   Aurius Design Tokens — matches Dashboard
-───────────────────────────────────────────── */
+/* ── Design token alias so unchanged code below still compiles ── */
 const C = {
-  pageBg: "#fbeae2",
-  sectionBg: "#fbeae2",
-  cardBg: "#ffffff",
-  text1: "#181818",
-  text2: "#3d3d3d",
-  text3: "#797979",
-  border: "#e8e2db",
-  accent: "#f97316",
-  accentBg: "rgba(249,115,22,0.08)",
-  accentBdr: "rgba(249,115,22,0.22)",
-  shadow: "rgba(0,0,0,0.06)",
-  shadowMd: "rgba(0,0,0,0.10)",
+  pageBg:    T.pageBg,
+  sectionBg: T.pageBg,
+  cardBg:    T.cardBg,
+  text1:     T.text1,
+  text2:     T.text2,
+  text3:     T.text3,
+  border:    T.border,
+  accent:    T.accent,
+  accentBg:  T.accentBg,
+  accentBdr: T.accentBorder,
+  shadow:    T.shadowCard,
+  shadowMd:  '0 4px 16px rgba(0,0,0,0.08)',
 };
-
-/* ─── PillTag (eyebrow label) ─── */
-const PillTag = ({ children }) => (
-  <span
-    style={{
-      display: "inline-flex",
-      alignItems: "center",
-      gap: 7,
-      padding: "4px 13px",
-      borderRadius: 30,
-      background: C.accentBg,
-      border: `1px solid ${C.accentBdr}`,
-      color: C.accent,
-      fontSize: 10,
-      fontWeight: 700,
-      letterSpacing: 1.4,
-      textTransform: "uppercase",
-      fontFamily: "'DM Sans', sans-serif",
-    }}
-  >
-    <span
-      style={{
-        width: 5,
-        height: 5,
-        borderRadius: "50%",
-        background: C.accent,
-        display: "inline-block",
-        flexShrink: 0,
-      }}
-    />
-    {children}
-  </span>
-);
 
 
 
@@ -815,8 +782,8 @@ const Machines = () => {
     <div
       style={{
         minHeight: "100vh",
-        background: "transparent",
-        fontFamily: "'DM Sans', sans-serif",
+        background: T.pageBg,
+        fontFamily: T.font,
       }}
     >
       <style>{`
@@ -826,8 +793,8 @@ const Machines = () => {
         @keyframes spin      { to { transform:rotate(360deg); } }
         @keyframes livePulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(1.4)} }
 
-        .mach-card { transition: border-color 0.26s ease, box-shadow 0.26s ease, transform 0.26s ease; }
-        .mach-card:hover { border-color: ${C.accentBdr} !important; box-shadow: 0 14px 40px rgba(249,115,22,0.10), 0 2px 8px ${C.shadowMd} !important; transform: translateY(-3px); }
+        .mach-card { transition: border-color 0.22s ease, box-shadow 0.22s ease, transform 0.22s ease; }
+        .mach-card:hover { border-color: ${C.accentBdr} !important; box-shadow: 0 8px 28px rgba(0,0,0,0.08), 0 2px 6px rgba(0,0,0,0.04) !important; transform: translateY(-2px); }
         .mach-card:hover .mach-sweep { width: 100% !important; }
 
         .mach-flag-input:focus { outline: none; border-color: ${C.accentBdr} !important; box-shadow: 0 0 0 3px rgba(249,115,22,0.08); }
@@ -836,7 +803,7 @@ const Machines = () => {
         .mach-refresh-btn:hover { border-color: ${C.accentBdr} !important; color: ${C.accent} !important; }
       `}</style>
 
-      <div className="resp-page-pad" style={{ maxWidth: 1200, margin: "0 auto", padding: "36px 32px" }}>
+      <div className="resp-page-pad" style={{ maxWidth: T.contentMaxWidth, margin: "0 auto", padding: "32px" }}>
         {/* ══ HEADER ══ */}
         <div
           style={{
@@ -850,7 +817,6 @@ const Machines = () => {
           }}
         >
           <div>
-            <PillTag>Lab Environment</PillTag>
             <h1
               style={{
                 fontSize: "clamp(26px,4vw,40px)",
@@ -1039,8 +1005,9 @@ const Machines = () => {
                     position: "relative",
                     background: C.cardBg,
                     border: `1px solid ${C.border}`,
-                    borderRadius: 12,
+                    borderRadius: T.cardRadius,
                     overflow: "hidden",
+                    boxShadow: T.shadowCard,
                     animation: `slideUp 0.4s ease-out ${index * 0.08}s both`,
                   }}
                 >

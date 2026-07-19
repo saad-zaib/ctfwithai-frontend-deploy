@@ -1,21 +1,22 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import apiService from '../services/api';
+import { T } from '../design/tokens';
 
 const C = {
-  pageBg: "#fbeae2",
-  cardBg: "#ffffff",
-  text1: "#181818",
-  text2: "#3d3d3d",
-  text3: "#797979",
-  border: "#e8e2db",
-  accent: "#f97316",
-  accentBg: "rgba(249,115,22,0.08)",
-  accentBdr: "rgba(249,115,22,0.22)",
-  green: "#16a34a",
-  greenBg: "rgba(22,163,74,0.08)",
-  greenBdr: "rgba(22,163,74,0.22)",
-  purple: "#7c3aed",
+  pageBg:   T.pageBg,
+  cardBg:   T.cardBg,
+  text1:    T.text1,
+  text2:    T.text2,
+  text3:    T.text3,
+  border:   T.border,
+  accent:   T.accent,
+  accentBg: T.accentBg,
+  accentBdr: T.accentBorder,
+  green:    T.success,
+  greenBg:  T.successBg,
+  greenBdr: T.successBorder,
+  purple:   '#7c3aed',
 };
 
 const badge = (text, color, bg, bdr) => (
@@ -79,7 +80,7 @@ export default function CoopLobby() {
       minHeight: "100vh",
       background: C.pageBg,
       padding: "40px 24px",
-      fontFamily: "'DM Sans', sans-serif",
+      fontFamily: T.font,
     }}>
       <div style={{ maxWidth: 800, margin: "0 auto" }}>
         <h1 style={{ margin: "0 0 8px", fontSize: 28, fontWeight: 800, color: C.text1 }}>
@@ -131,7 +132,7 @@ export default function CoopLobby() {
                 background: "transparent",
                 color: C.text2,
                 cursor: "pointer",
-                fontFamily: "'DM Sans', sans-serif",
+                fontFamily: T.font,
               }}
             >
               Refresh
@@ -196,7 +197,7 @@ export default function CoopLobby() {
                       fontSize: 14,
                       textDecoration: "none",
                       whiteSpace: "nowrap",
-                      fontFamily: "'DM Sans', sans-serif",
+                      fontFamily: T.font,
                     }}
                   >
                     Open

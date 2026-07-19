@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Shield, Lock, Eye, EyeOff, Loader, AlertCircle, CheckCircle, ArrowLeft } from 'lucide-react';
 
 // ─── Your FastAPI backend URL ─────────────────────────────────────────────────
-const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+const API_BASE = process.env.REACT_APP_API_URL || "";
 
 // ─── Particle grid background ────────────────────────────────────────────────
 const GridBg = () => (

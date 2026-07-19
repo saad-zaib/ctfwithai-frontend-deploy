@@ -1,5 +1,5 @@
 // src/services/api.js - Enhanced API Service
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+const API_BASE_URL = process.env.REACT_APP_API_URL || "";
 
 const validateFlagLocally = (rawFlag) => {
   if (typeof rawFlag !== 'string') return { valid: false, error: 'Flag must be a string.' };
@@ -625,13 +625,15 @@ class APIService {
     return this.request(`/api/signal/feed?limit=${limit}`);
   }
 
-  async createPing(body, imageFile = null, parentId = null, boostOfId = null) {
+  async createPing(body, imageFile = null, parentId = null, boostOfId = null, pollOptions = null) {
     const token = localStorage.getItem('token') || '';
     const form = new FormData();
-    if (body)       form.append('body', body);
-    if (parentId)   form.append('parent_id', parentId);
-    if (boostOfId)  form.append('boost_of_id', boostOfId);
-    if (imageFile)  form.append('image', imageFile);
+    if (body)        form.append('body', body);
+    if (parentId)    form.append('parent_id', parentId);
+    if (boostOfId)   form.append('boost_of_id', boostOfId);
+    if (imageFile)   form.append('image', imageFile);
+    if (pollOptions && pollOptions.length >= 2)
+      form.append('poll_options', JSON.stringify(pollOptions));
     const res = await fetch(`${API_BASE_URL}/api/signal/ping`, {
       method: 'POST',
       headers: { Authorization: `Bearer ${token}` },
@@ -669,6 +671,10 @@ class APIService {
 
   async getUserPings(userId, limit = 30) {
     return this.request(`/api/signal/user/${userId}?limit=${limit}`);
+  }
+
+  async votePoll(pingId, optionId) {
+    return this.request(`/api/signal/${pingId}/poll/vote/${optionId}`, { method: 'POST' });
   }
 }
 

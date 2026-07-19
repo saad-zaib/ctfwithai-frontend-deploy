@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Building2, UserPlus, Mail, Lock, User, Eye, EyeOff, Loader, AlertCircle, CheckCircle, Shield, Target, Settings, Users, BarChart3, Clock } from 'lucide-react';
 
-const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+const API_BASE = process.env.REACT_APP_API_URL || "";
 
 // ─── Enterprise Admin Dashboard ──────────────────────────────────────────────
 const EnterpriseDashboard = () => {

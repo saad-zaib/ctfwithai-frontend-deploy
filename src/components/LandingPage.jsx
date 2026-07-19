@@ -10,7 +10,7 @@ import imgOperator from "../assets/pimg2.png";
 import roboman from "../assets/roboman.webp";
 import awsImg from "../assets/aws.png";
 
-const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
+const API_BASE = process.env.REACT_APP_API_URL || "";
 
 /* ─────────────────────────────────────────────
    Aurius Design Tokens
