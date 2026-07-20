@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard, Server, Trophy, Bot, BookOpen, Users,
@@ -73,8 +73,29 @@ const Sidebar = ({ onLogout, onToggle, isOpen, isMobile }) => {
   const role = localStorage.getItem('role') || 'individual';
   const username = localStorage.getItem('username') || 'Hacker';
   const userId = localStorage.getItem('userId') || '';
-  const profileAvatar = localStorage.getItem(`profileAvatar:${userId || 'anonymous'}`);
   const avatarBg = role.startsWith('enterprise_') ? '#3b82f6' : T.accent;
+  const [profileAvatar, setProfileAvatar] = useState(null);
+
+  useEffect(() => {
+    if (!userId) return;
+    const cacheKey = `avatarUrl:${userId}`;
+    const cached = sessionStorage.getItem(cacheKey);
+    if (cached) { setProfileAvatar(cached); return; }
+    const token = localStorage.getItem('token');
+    if (!token) return;
+    fetch(`/api/users/${encodeURIComponent(userId)}/progress`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        const url = data?.user?.preferences?.avatar || null;
+        if (url) {
+          sessionStorage.setItem(cacheKey, url);
+          setProfileAvatar(url);
+        }
+      })
+      .catch(() => {});
+  }, [userId]);
 
   const isAdmin = role === 'enterprise_admin';
   const isStaff = role === 'enterprise_staff';

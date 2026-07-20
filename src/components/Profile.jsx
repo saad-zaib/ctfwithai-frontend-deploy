@@ -18,7 +18,6 @@ const C = {
 };
 
 const getProfileDraftStorageKey = (userId) => `profileDraft:${userId || "anonymous"}`;
-const getProfileAvatarStorageKey = (userId) => `profileAvatar:${userId || "anonymous"}`;
 
 const TABS = ["Overview", "Skills", "Campaigns", "Submissions", "Friends"];
 
@@ -49,6 +48,8 @@ const Profile = () => {
   const [friendsLoaded, setFriendsLoaded] = useState(false);
   const friendSearchTimer = useRef(null);
   const [avatarFileName, setAvatarFileName] = useState("");
+  const [avatarFile, setAvatarFile] = useState(null);
+  const [removeAvatar, setRemoveAvatar] = useState(false);
   const [isDraftReady, setIsDraftReady] = useState(false);
   const [draft, setDraft] = useState({
     username: "",
@@ -106,17 +107,13 @@ const Profile = () => {
   useEffect(() => {
     const key = getProfileDraftStorageKey(userId);
     const saved = localStorage.getItem(key);
-    const avatarCache = localStorage.getItem(getProfileAvatarStorageKey(userId)) || "";
     if (saved) {
       try {
         const parsed = JSON.parse(saved) || {};
         setDraft((prev) => ({ ...prev, ...parsed }));
-        if (parsed.avatar || avatarCache) setAvatarFileName("Current profile photo");
       } catch {
         // Ignore invalid cached profile draft.
       }
-    } else if (avatarCache) {
-      setAvatarFileName("Current profile photo");
     }
     setIsDraftReady(true);
   }, [userId]);
@@ -132,11 +129,12 @@ const Profile = () => {
       ...prev,
       username: prev.username || currentUsername,
       email: prev.email || currentEmail,
-      // Seed from server — only if not already set by localStorage cache
       bio:      prev.bio      || prefs.bio      || "",
       location: prev.location || prefs.location || "",
       website:  prev.website  || prefs.website  || "",
+      avatar:   prev.avatar   || prefs.avatar   || "",
     }));
+    if (prefs.avatar) setAvatarFileName("Current profile photo");
     if (prefs.is_private !== undefined) {
       setIsPrivate(!!prefs.is_private);
     }
@@ -248,8 +246,7 @@ const Profile = () => {
   const email = user.email || "";
   const effectiveUsername = draft.username?.trim() || username;
   const effectiveEmail = draft.email?.trim() || email;
-  const effectiveAvatar =
-    draft.avatar || localStorage.getItem(getProfileAvatarStorageKey(userId)) || "";
+  const effectiveAvatar = draft.avatar || "";
   const initial = effectiveUsername.slice(0, 1).toUpperCase();
 
   const stats = [
@@ -271,11 +268,12 @@ const Profile = () => {
       setSaveMessage("Please upload a valid image file.");
       return;
     }
+    setAvatarFile(file);
+    setRemoveAvatar(false);
+    setAvatarFileName(file.name);
+    // Show a local preview immediately
     const reader = new FileReader();
-    reader.onload = () => {
-      handleDraftChange("avatar", String(reader.result || ""));
-      setAvatarFileName(file.name);
-    };
+    reader.onload = () => handleDraftChange("avatar", String(reader.result || ""));
     reader.readAsDataURL(file);
   };
 
@@ -304,13 +302,24 @@ const Profile = () => {
         }),
       });
 
-      // Keep avatar in localStorage (no server upload)
-      if (draft.avatar) localStorage.setItem(getProfileAvatarStorageKey(userId), draft.avatar);
-      else localStorage.removeItem(getProfileAvatarStorageKey(userId));
+      if (avatarFile) {
+        const formData = new FormData();
+        formData.append("file", avatarFile);
+        await api.request(`/api/users/${userId}/avatar`, {
+          method: "POST",
+          headers: {},
+          body: formData,
+        });
+        setAvatarFile(null);
+      } else if (removeAvatar) {
+        await api.request(`/api/users/${userId}/avatar`, { method: "DELETE" });
+        setRemoveAvatar(false);
+      }
+
       if (nextUsername) localStorage.setItem("username", nextUsername);
+      sessionStorage.removeItem(`avatarUrl:${userId}`);
 
       setSaveMessage("Profile saved!");
-      // Reload to pull fresh server data
       await fetchUserProgress();
     } catch (e) {
       setSaveMessage(e?.message || "Failed to save profile.");
@@ -318,17 +327,19 @@ const Profile = () => {
   };
 
   const handleResetDraft = () => {
+    const prefs = user.preferences || {};
     setDraft({
       username,
       email,
-      bio: "",
-      location: "",
-      website: "",
-      avatar: "",
+      bio:      prefs.bio      || "",
+      location: prefs.location || "",
+      website:  prefs.website  || "",
+      avatar:   prefs.avatar   || "",
     });
+    setAvatarFile(null);
+    setRemoveAvatar(false);
     localStorage.removeItem(getProfileDraftStorageKey(userId));
-    localStorage.removeItem(getProfileAvatarStorageKey(userId));
-    setAvatarFileName("");
+    setAvatarFileName(prefs.avatar ? "Current profile photo" : "");
     setSaveMessage("Profile draft reset.");
   };
 
@@ -659,6 +670,8 @@ const Profile = () => {
                 <button
                   onClick={() => {
                     handleDraftChange("avatar", "");
+                    setAvatarFile(null);
+                    setRemoveAvatar(true);
                     setAvatarFileName("");
                   }}
                   style={{

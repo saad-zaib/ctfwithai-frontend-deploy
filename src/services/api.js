@@ -100,10 +100,11 @@ class APIService {
   async request(endpoint, options = {}) {
     try {
       const { headers: extraHeaders, ...restOptions } = options;
+      const isFormData = restOptions.body instanceof FormData;
       const response = await fetch(`${API_BASE_URL}${endpoint}`, {
         ...restOptions,
         headers: {
-          'Content-Type': 'application/json',
+          ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
           ...this._authHeaders(),
           ...extraHeaders,
         },

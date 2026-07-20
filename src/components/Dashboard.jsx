@@ -22,12 +22,11 @@ const authHeaders = () => ({
 });
 const formatName = (name) => name?.length > 14 ? name.slice(0, 14) + '…' : name;
 
-const UserAvatar = ({ userId, username, size = 30, style: extraStyle = {} }) => {
-  const avatar = userId ? localStorage.getItem(`profileAvatar:${userId}`) : null;
+const UserAvatar = ({ avatarUrl, username, size = 30, style: extraStyle = {} }) => {
   const initials = (username || '?').slice(0, 2).toUpperCase();
-  return avatar ? (
+  return avatarUrl ? (
     <img
-      src={avatar}
+      src={avatarUrl}
       alt={username}
       style={{
         width: size, height: size, borderRadius: '50%',
@@ -209,7 +208,7 @@ const FeedRow = ({ entry, timeAgo, i }) => {
       }}
     >
       {/* Avatar + username */}
-      <UserAvatar userId={entry.user_id} username={entry.username} size={32} />
+      <UserAvatar avatarUrl={entry.avatar_url || null} username={entry.username} size={32} />
       <span style={{ flex: 1, fontSize: 13, fontWeight: 700, color: T.text1, fontFamily: T.font, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
         {formatName(entry.username)}
       </span>
